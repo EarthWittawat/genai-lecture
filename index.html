@@ -231,6 +231,50 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
 .tflow-row .val b{color:var(--gold)}
 .tflow-row .sh{color:var(--parch-dim);font-size:.7rem;text-align:right}
 @media(max-width:640px){.tflow-row{grid-template-columns:28px 1fr;row-gap:2px}.tflow-row .op{grid-column:2;grid-row:1}.tflow-row .val{grid-column:2;grid-row:2}.tflow-row .sh{grid-column:2;grid-row:3;text-align:left}}
+
+/* ---------- RESPONSIVE FIXES ---------- */
+@media(max-width:720px){
+  body{padding-bottom:60px}
+  .shell{padding:0 16px}
+  header.top{padding:32px 0 22px}
+  .lede{font-size:.96rem}
+  .brief{padding:12px 14px;font-size:.88rem}
+  .legend{gap:8px}
+  .chip{padding:7px 11px;font-size:.74rem}
+  .controls{gap:12px;margin:20px 0 4px}
+  .prog{margin-left:0;width:100%}
+  .toggle span{font-size:.8rem}
+  .t-head{padding:22px 0 4px}
+  .t-idea{font-size:.98rem}
+  .viz,.mathlens{padding:16px 14px}
+  .viz-h,.ml-h{font-size:.66rem}
+  /* SVGs: allow horizontal scroll so text stays readable */
+  .viz{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .viz svg{min-width:600px}
+  .gradgraph{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .gradgraph svg{min-width:340px}
+  .eq{padding:12px 10px;font-size:.92em}
+  .card{padding:16px 14px 18px}
+  .card-h{font-size:1.05rem}
+  .pq-head{padding:14px 16px;gap:10px}
+  .pq-head h3{font-size:1.02rem}
+  .pq-body{padding:16px}
+  .practice .subq li{font-size:.9rem;padding:7px 0 7px 28px}
+  .hook{padding:14px 16px;gap:12px}
+  .hook .ic{font-size:1.35rem}
+  .pager{flex-direction:column;gap:10px}
+  .pg{padding:12px 16px}
+  .derivline{font-size:.74rem;padding:7px 10px}
+  .term-list li{font-size:.82rem}
+}
+@media(max-width:420px){
+  .shell{padding:0 12px}
+  h1.title{font-size:1.85rem}
+  .t-title{font-size:1.5rem}
+  .tab{padding:8px 12px;font-size:.8rem}
+  .tab .num{font-size:.66rem}
+  .chip{padding:6px 10px;font-size:.7rem}
+}
 </style>
 </head>
 <body>
@@ -269,7 +313,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
   </div>
 
   <!-- ============ TOPIC 1: FOUNDATIONS ============ -->
-  <section class="topic" data-t="0">
+  <section class="topic active" data-t="0">
     <div class="t-head">
       <div class="t-tag">Topic 1 · Modules 1–2</div>
       <h2 class="t-title">Foundations: Likelihood &amp; the Universal Training Loop</h2>
