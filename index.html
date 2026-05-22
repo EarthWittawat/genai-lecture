@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Equation Lab · Generative AI Exam Companion</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Spline+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#10131c;          /* deep ink background */
+  --ink-2:#161b27;        /* panel */
+  --ink-3:#1e2533;        /* raised */
+  --line:#2c3547;         /* borders */
+  --parch:#ece3d2;        /* main text */
+  --parch-dim:#9aa2b1;    /* muted text */
+  --gold:#e9b949;         /* GENERATIVE */
+  --gold-soft:#3a3320;
+  --teal:#4fd1c5;         /* LOSS */
+  --teal-soft:#173431;
+  --coral:#ff8166;        /* TRAINING */
+  --coral-soft:#3a221c;
+  --display:'Fraunces',Georgia,serif;
+  --body:'Spline Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(900px 500px at 12% -8%, #1c2436 0%, transparent 60%),
+    radial-gradient(800px 600px at 95% 0%, #20191f 0%, transparent 55%),
+    var(--ink);
+  color:var(--parch);
+  font-family:var(--body);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:80px;
+}
+.katex{font-size:1.05em}
+.shell{max-width:1080px;margin:0 auto;padding:0 22px}
+
+/* ---------- HEADER ---------- */
+header.top{padding:44px 0 26px;border-bottom:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+h1.title{font-family:var(--display);font-weight:600;font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.02;letter-spacing:-.01em}
+h1.title em{font-style:italic;color:var(--gold)}
+.lede{margin-top:16px;max-width:660px;color:var(--parch-dim);font-size:1.02rem}
+.brief{margin-top:22px;border-left:3px solid var(--gold);background:linear-gradient(90deg,rgba(233,185,73,.07),transparent);padding:14px 18px;border-radius:0 10px 10px 0;font-size:.94rem}
+.brief b{color:var(--parch)}
+
+/* ---------- LEGEND ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.chip{display:flex;align-items:center;gap:9px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;font-size:.8rem;font-weight:600;background:var(--ink-2)}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.g{background:var(--gold)} .dot.l{background:var(--teal)} .dot.t{background:var(--coral)}
+.chip span{color:var(--parch-dim);font-weight:400;font-family:var(--mono);font-size:.72rem}
+
+/* ---------- TAB NAV ---------- */
+nav.tabs{position:sticky;top:0;z-index:40;background:rgba(16,19,28,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin-top:30px}
+.tabrow{display:flex;gap:4px;overflow-x:auto;padding:10px 0;scrollbar-width:thin}
+.tabrow::-webkit-scrollbar{height:6px}
+.tabrow::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.tab{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:9px 15px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--parch-dim);font-family:var(--body);font-size:.86rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:.18s}
+.tab .num{font-family:var(--mono);font-size:.72rem;opacity:.6}
+.tab:hover{color:var(--parch);background:var(--ink-2)}
+.tab.active{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.tab.active .num{opacity:.7}
+.tab.done::after{content:"✓";color:var(--teal);font-size:.8rem;margin-left:2px}
+.tab.active.done::after{color:var(--ink)}
+
+/* ---------- CONTROLS ---------- */
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:26px 0 6px}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:.86rem;color:var(--parch-dim)}
+.switch{width:42px;height:23px;border-radius:999px;background:var(--ink-3);border:1px solid var(--line);position:relative;transition:.2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--parch-dim);transition:.2s}
+.toggle.on .switch{background:var(--teal-soft);border-color:var(--teal)}
+.toggle.on .switch::after{left:21px;background:var(--teal)}
+.toggle.on{color:var(--parch)}
+.prog{margin-left:auto;font-family:var(--mono);font-size:.76rem;color:var(--parch-dim)}
+.prog b{color:var(--gold)}
+
+/* ---------- TOPIC PANEL ---------- */
+.topic{display:none;animation:fade .4s ease}
+.topic.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.t-head{padding:30px 0 6px}
+.t-tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--parch-dim)}
+.t-title{font-family:var(--display);font-weight:600;font-size:clamp(1.7rem,4vw,2.5rem);margin-top:6px;line-height:1.05}
+.t-idea{margin-top:14px;font-size:1.06rem;color:var(--parch);max-width:720px}
+.t-idea .hl{color:var(--gold);font-weight:600}
+
+/* TRIAD */
+.triad{display:grid;grid-template-columns:1fr;gap:16px;margin-top:28px}
+@media(min-width:780px){.triad{grid-template-columns:1fr 1fr 1fr}}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--ink-2);padding:18px 18px 20px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.card.g::before{background:var(--gold)} .card.l::before{background:var(--teal)} .card.t::before{background:var(--coral)}
+.card-k{font-family:var(--mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:4px}
+.card.g .card-k{color:var(--gold)} .card.l .card-k{color:var(--teal)} .card.t .card-k{color:var(--coral)}
+.card-h{font-family:var(--display);font-size:1.15rem;font-weight:600;margin-bottom:12px}
+.eq{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px 12px;margin:8px 0 12px;overflow-x:auto;text-align:center}
+.decode{font-size:.86rem;color:var(--parch-dim);margin-top:8px}
+.decode li{margin:5px 0 5px 2px;list-style:none;padding-left:16px;position:relative}
+.decode li::before{content:"▸";position:absolute;left:0;color:var(--parch-dim);opacity:.5}
+.decode b{color:var(--parch);font-weight:600}
+.kbd{font-family:var(--mono);font-size:.82em;background:var(--ink-3);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+/* TRAINING STEPS */
+.steps{counter-reset:s;margin-top:6px}
+.steps li{list-style:none;position:relative;padding:7px 0 7px 34px;font-size:.88rem;color:var(--parch-dim);border-bottom:1px dashed var(--line)}
+.steps li:last-child{border-bottom:none}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:7px;width:22px;height:22px;border-radius:50%;background:var(--coral-soft);border:1px solid var(--coral);color:var(--coral);font-family:var(--mono);font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:600}
+.steps li b{color:var(--parch)}
+
+/* VISUAL BLOCK */
+.viz{margin-top:30px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--ink-2),var(--ink));padding:22px 18px}
+.viz-h{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--parch-dim);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.viz-h::before{content:"";width:18px;height:1px;background:var(--gold)}
+.viz svg{width:100%;height:auto;display:block}
+.viz-cap{margin-top:14px;font-size:.84rem;color:var(--parch-dim);text-align:center}
+
+/* svg text helpers (must use presentation attrs or inline) */
+.svg-box{fill:var(--ink-3);stroke:var(--line);stroke-width:1.2}
+.svg-box-g{fill:var(--gold-soft);stroke:var(--gold);stroke-width:1.4}
+.svg-box-l{fill:var(--teal-soft);stroke:var(--teal);stroke-width:1.4}
+.svg-box-t{fill:var(--coral-soft);stroke:var(--coral);stroke-width:1.4}
+.svg-lab{fill:var(--parch);font-family:'Spline Sans',sans-serif;font-size:13px;font-weight:600}
+.svg-sub{fill:var(--parch-dim);font-family:'JetBrains Mono',monospace;font-size:10.5px}
+.svg-ar{stroke:var(--parch-dim);stroke-width:1.6;fill:none}
+.svg-ar-g{stroke:var(--gold);stroke-width:1.8;fill:none}
+.svg-ar-l{stroke:var(--teal);stroke-width:1.8;fill:none}
+.svg-ar-t{stroke:var(--coral);stroke-width:1.8;fill:none}
+.svg-eqn{fill:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px}
+
+/* MEMORY HOOK */
+.hook{margin-top:26px;display:flex;gap:16px;align-items:flex-start;border:1px solid var(--gold);border-radius:14px;background:linear-gradient(100deg,rgba(233,185,73,.09),transparent 70%);padding:18px 20px}
+.hook .ic{font-size:1.6rem;line-height:1}
+.hook h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.hook p{font-size:.96rem}
+.hook .mnem{font-family:var(--display);font-style:italic;color:var(--gold);font-size:1.05rem}
+
+/* PRACTICE */
+.practice{margin-top:30px;border:1px solid var(--line);border-radius:14px;background:var(--ink-2);overflow:hidden}
+.pq-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.pq-head .badge{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);background:var(--coral);padding:4px 9px;border-radius:6px;font-weight:700}
+.pq-head h3{font-family:var(--display);font-size:1.15rem;font-weight:600}
+.pq-body{padding:18px 20px}
+.pq-q{font-size:1rem;margin-bottom:6px}
+.pq-q .stem{color:var(--parch)}
+.subq{margin:14px 0 0;padding-left:4px}
+.subq li{list-style:none;padding:8px 0 8px 30px;position:relative;font-size:.94rem;color:var(--parch)}
+.subq li .lbl{position:absolute;left:0;top:8px;font-family:var(--mono);font-size:.82rem;color:var(--coral);font-weight:600}
+.reveal-btn{margin-top:18px;display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border:1px solid var(--teal);border-radius:10px;background:var(--teal-soft);color:var(--teal);font-family:var(--body);font-weight:600;font-size:.9rem;cursor:pointer;transition:.18s}
+.reveal-btn:hover{background:var(--teal);color:var(--ink)}
+.answer{margin-top:16px;border-top:1px dashed var(--line);padding-top:16px;display:none}
+.answer.show{display:block;animation:fade .35s ease}
+.answer h5{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin:14px 0 6px}
+.answer h5:first-child{margin-top:0}
+.answer p{font-size:.92rem;color:var(--parch-dim);margin-bottom:8px}
+.answer p b{color:var(--parch)}
+.answer .eq{margin:6px 0 10px}
+
+/* NAV BUTTONS */
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:34px}
+.pg{flex:1;border:1px solid var(--line);border-radius:12px;background:var(--ink-2);padding:14px 18px;cursor:pointer;color:var(--parch-dim);transition:.18s;text-align:left}
+.pg:hover{border-color:var(--gold);color:var(--parch)}
+.pg.next{text-align:right}
+.pg small{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;display:block;opacity:.7}
+.pg span{font-family:var(--display);font-size:1rem;font-weight:600;color:var(--parch)}
+.pg.dis{opacity:.3;pointer-events:none}
+
+footer{text-align:center;margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--parch-dim);font-size:.82rem}
+footer .mono{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em}
+
+/* generic helpers */
+.note{font-size:.84rem;color:var(--parch-dim);margin-top:8px}
+.tagline{color:var(--teal)} 
+b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
+
+/* ---------- MATH LENS ---------- */
+.mathlens{margin-top:30px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--ink-3),var(--ink-2));padding:22px 20px}
+.ml-h{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.ml-h::before{content:"∂";font-family:var(--display);font-size:1.15rem;color:var(--gold);font-style:italic;line-height:1}
+.ml-h .sub{color:var(--parch-dim);font-weight:400;letter-spacing:.18em;margin-left:8px;text-transform:none;font-family:var(--body);font-size:.84rem}
+
+.ml-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.ml-grid{grid-template-columns:1fr 1fr}}
+
+.ml-block{border:1px solid var(--line);border-radius:10px;background:var(--ink-2);padding:14px 16px;position:relative;overflow:hidden}
+.ml-block::before{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+.ml-block.full{grid-column:1/-1}
+.ml-block.terms::before{background:var(--gold)}
+.ml-block.grad::before{background:var(--coral)}
+.ml-block.flow::before{background:var(--teal)}
+
+.ml-k{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px}
+.ml-block.terms .ml-k{color:var(--gold)}
+.ml-block.grad .ml-k{color:var(--coral)}
+.ml-block.flow .ml-k{color:var(--teal)}
+.ml-block h4{font-family:var(--display);font-size:1.02rem;font-weight:600;margin-bottom:8px;color:var(--parch)}
+.ml-block .eq{margin:8px 0}
+.term-list{list-style:none;font-size:.85rem;color:var(--parch-dim);margin-top:6px}
+.term-list li{padding:7px 0 7px 18px;position:relative;border-bottom:1px dashed var(--line);line-height:1.5}
+.term-list li:last-child{border-bottom:none}
+.term-list li::before{content:"▸";position:absolute;left:0;opacity:.5}
+.term-list b{color:var(--parch)}
+.term-list .sym{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:.88em;background:var(--ink);padding:1px 6px;border-radius:4px;border:1px solid var(--gold-soft);margin-right:4px}
+
+.gradgraph{margin:8px 0;padding:8px;background:var(--ink);border-radius:8px;border:1px solid var(--line)}
+.gradgraph svg{width:100%;height:auto;display:block}
+
+.derivline{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--parch);padding:8px 11px;background:var(--ink);border-left:2px solid var(--coral);border-radius:4px;margin:7px 0;line-height:1.55}
+.derivline .lbl{color:var(--coral);font-weight:700;margin-right:8px;background:var(--coral-soft);padding:1px 6px;border-radius:4px;font-size:.74rem}
+.derivline .note{color:var(--parch-dim);font-family:var(--body);margin-left:6px;font-size:.86em;font-style:italic}
+
+.tensor-flow{margin:8px 0}
+.tflow-row{display:grid;grid-template-columns:32px 110px 1fr 78px;gap:12px;align-items:center;padding:9px 6px;border-bottom:1px dashed var(--line);font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.4}
+.tflow-row:last-child{border-bottom:none}
+.tflow-row .ix{color:var(--coral);font-weight:700}
+.tflow-row .op{color:var(--gold);font-weight:600}
+.tflow-row .val{color:var(--parch);word-break:break-word}
+.tflow-row .val b{color:var(--gold)}
+.tflow-row .sh{color:var(--parch-dim);font-size:.7rem;text-align:right}
+@media(max-width:640px){.tflow-row{grid-template-columns:28px 1fr;row-gap:2px}.tflow-row .op{grid-column:2;grid-row:1}.tflow-row .val{grid-column:2;grid-row:2}.tflow-row .sh{grid-column:2;grid-row:3;text-align:left}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="shell">
+    <div class="kicker">Generative AI · Final-Exam Companion</div>
+    <h1 class="title">The <em>Equation</em> Lab</h1>
+    <p class="lede">Eight topics, one ritual each: state the <b class="gold">generative equation</b>, state the <b class="teal">loss</b>, and explain how the loss <b class="coral">drives the training loop</b>. Built for the explain-style exam — no number crunching, just understanding you can rebuild from memory.</p>
+
+    <div class="brief">
+      <b>Your brief, in plain words:</b> Know the core equations (generative &amp; loss) of each topic, and link them to the training regime. No calculations, no MCQ — just explain. Each topic below ends with an <b>“explain” practice question</b> in exactly that style, with a hidden model answer.
+    </div>
+
+    <div class="legend">
+      <div class="chip"><span class="dot g"></span>Generative <span>what it produces</span></div>
+      <div class="chip"><span class="dot l"></span>Loss <span>what it minimizes</span></div>
+      <div class="chip"><span class="dot t"></span>Training <span>how the loss drives it</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="shell">
+    <div class="tabrow" id="tabrow"></div>
+  </div>
+</nav>
+
+<main class="shell">
+  <div class="controls">
+    <div class="toggle" id="studyToggle">
+      <div class="switch"></div>
+      <span>Study mode — hide all answers, reveal one at a time (active recall)</span>
+    </div>
+    <div class="prog" id="prog">Seen <b>0</b> / 8</div>
+  </div>
+
+  <!-- ============ TOPIC 1: FOUNDATIONS ============ -->
+  <section class="topic" data-t="0">
+    <div class="t-head">
+      <div class="t-tag">Topic 1 · Modules 1–2</div>
+      <h2 class="t-title">Foundations: Likelihood &amp; the Universal Training Loop</h2>
+      <p class="t-idea">A generative model learns the <span class="hl">data distribution</span> itself, then samples from it. The thread tying every later model together: <span class="hl">the loss is a measure of "how wrong," and the same five-step loop minimizes it.</span></p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative goal</div>
+        <div class="card-h">Model the data density</div>
+        <div class="eq">\[ p_\theta(x)\;\approx\;p_{\text{data}}(x) \]</div>
+        <ul class="decode">
+          <li><b>Discriminative</b> learns \(p(y\!\mid\!x)\) — predict a label.</li>
+          <li><b>Generative</b> learns \(p(x)\) (or \(p(x,y)\)) — then <b>sample</b> new \(x\).</li>
+          <li>Goal: realistic <b>and</b> diverse novel samples.</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Maximum likelihood = min cross-entropy</div>
+        <div class="eq">\[ \mathcal{L}(\theta)=-\mathbb{E}_{x\sim p_{\text{data}}}\big[\log p_\theta(x)\big] \]</div>
+        <ul class="decode">
+          <li>Maximizing likelihood \(=\) minimizing the <b>negative log-likelihood</b>.</li>
+          <li>Classification → <b>cross-entropy</b>; regression → <b>MSE</b>.</li>
+          <li>A loss must be <b>differentiable</b> and <b>scalar</b>.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">The 5-step loop (PyTorch)</div>
+        <ol class="steps">
+          <li><b>Forward</b> pass → predictions</li>
+          <li><b>Compute loss</b> (the learning signal)</li>
+          <li><b>Backward</b> pass → gradients via autograd</li>
+          <li><b>Update</b> parameters (optimizer step)</li>
+          <li><b>Zero</b> gradients, repeat</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · one optimization loop</div>
+      <svg viewBox="0 0 720 200" role="img" aria-label="Training loop">
+        <!-- five boxes -->
+        <rect class="svg-box" x="20"  y="70" width="110" height="58" rx="9"/>
+        <text class="svg-lab" x="75"  y="95"  text-anchor="middle">Forward</text>
+        <text class="svg-sub" x="75"  y="112" text-anchor="middle">ŷ = f(x; θ)</text>
+
+        <rect class="svg-box-l" x="160" y="70" width="110" height="58" rx="9"/>
+        <text class="svg-lab" x="215" y="95"  text-anchor="middle">Loss</text>
+        <text class="svg-sub" x="215" y="112" text-anchor="middle">L(ŷ, y)</text>
+
+        <rect class="svg-box-t" x="300" y="70" width="110" height="58" rx="9"/>
+        <text class="svg-lab" x="355" y="95"  text-anchor="middle">Backward</text>
+        <text class="svg-sub" x="355" y="112" text-anchor="middle">∂L/∂θ</text>
+
+        <rect class="svg-box" x="440" y="70" width="110" height="58" rx="9"/>
+        <text class="svg-lab" x="495" y="95"  text-anchor="middle">Update</text>
+        <text class="svg-sub" x="495" y="112" text-anchor="middle">θ ← θ − η∇</text>
+
+        <rect class="svg-box" x="580" y="70" width="110" height="58" rx="9"/>
+        <text class="svg-lab" x="635" y="95"  text-anchor="middle">Zero grad</text>
+        <text class="svg-sub" x="635" y="112" text-anchor="middle">reset ∇</text>
+
+        <!-- arrows -->
+        <path class="svg-ar" d="M130 99 H160" marker-end="url(#a1)"/>
+        <path class="svg-ar-l" d="M270 99 H300" marker-end="url(#al1)"/>
+        <path class="svg-ar-t" d="M410 99 H440" marker-end="url(#at1)"/>
+        <path class="svg-ar" d="M550 99 H580" marker-end="url(#a1)"/>
+        <!-- loop back -->
+        <path class="svg-ar" d="M635 70 C635 30 75 30 75 68" marker-end="url(#a1)"/>
+        <text class="svg-sub" x="355" y="26" text-anchor="middle">repeat for every mini-batch</text>
+
+        <defs>
+          <marker id="a1"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="al1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
+          <marker id="at1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">CNN classifiers, GAN discriminators, diffusion score nets, LLM next-token — <b>all run this loop</b>. Only the architecture, loss definition, and data change.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">how the loss becomes a gradient</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose the loss</div>
+          <h4>Every symbol, one job</h4>
+          <div class="eq">\[ \mathcal{L}(\theta) = -\mathbb{E}_{x\sim p_{\text{data}}}\big[\log p_\theta(x)\big] \]</div>
+          <ul class="term-list">
+            <li><span class="sym">𝔼<sub>x∼p<sub>data</sub></sub></span><b>expectation</b> over training data — in practice = average over a mini-batch of N samples.</li>
+            <li><span class="sym">p<sub>θ</sub>(x)</span>model's <b>predicted probability</b> for x, parameterized by θ (the weights we update).</li>
+            <li><span class="sym">log</span>turns products of probs into sums; numerically stable; aligns with information theory.</li>
+            <li><span class="sym">−</span>flips the sign so <b>maximize likelihood ≡ minimize loss</b> (optimizers all descend).</li>
+            <li>Classification: p<sub>θ</sub>(x) = softmax(logits); loss collapses to <b>cross-entropy</b> on the true class.</li>
+            <li>Regression w/ Gaussian likelihood: same equation reduces to <b>MSE</b> (up to constants).</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>Where ∂ℒ/∂θ actually hits</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 140" role="img" aria-label="Forward pass and backward gradient">
+              <rect class="svg-box" x="6" y="50" width="56" height="40" rx="7"/>
+              <text class="svg-lab" x="34" y="74" text-anchor="middle">x</text>
+              <rect class="svg-box-g" x="82" y="46" width="80" height="48" rx="7"/>
+              <text class="svg-lab" x="122" y="68" text-anchor="middle">f(x;θ)</text>
+              <text class="svg-sub" x="122" y="83" text-anchor="middle">logits z</text>
+              <rect class="svg-box-l" x="184" y="46" width="76" height="48" rx="7"/>
+              <text class="svg-lab" x="222" y="68" text-anchor="middle">softmax</text>
+              <text class="svg-sub" x="222" y="83" text-anchor="middle">p̂</text>
+              <rect class="svg-box-t" x="282" y="46" width="74" height="48" rx="7"/>
+              <text class="svg-lab" x="319" y="68" text-anchor="middle">ℒ = CE</text>
+              <text class="svg-sub" x="319" y="83" text-anchor="middle">−log p̂_y</text>
+              <path class="svg-ar" d="M62 70 H82" marker-end="url(#fa1)"/>
+              <path class="svg-ar-g" d="M162 70 H184" marker-end="url(#fg1)"/>
+              <path class="svg-ar-l" d="M260 70 H282" marker-end="url(#fl1)"/>
+              <path class="svg-ar-t" d="M319 94 C319 122 122 122 122 94" marker-end="url(#ft1)"/>
+              <text class="svg-sub" x="220" y="134" text-anchor="middle" fill="#ff8166">∂ℒ/∂z = p̂ − y_onehot  →  flows back through f to θ</text>
+              <defs>
+                <marker id="fa1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="fg1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="fl1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="ft1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">①</span>∂ℒ/∂p̂_y = −1/p̂_y <span class="note">direct from d(−log u)/du</span></div>
+          <div class="derivline"><span class="lbl">②</span>∂ℒ/∂z = p̂ − y_onehot <span class="note">softmax+CE combine to this clean line</span></div>
+          <div class="derivline"><span class="lbl">③</span>∂ℒ/∂θ = (∂ℒ/∂z) · (∂z/∂θ) <span class="note">chain rule — autograd does this automatically</span></div>
+          <div class="derivline"><span class="lbl">④</span>θ ← θ − η · ∂ℒ/∂θ <span class="note">SGD update — η is the learning rate</span></div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · 3-class classifier, one sample</div>
+          <h4>Watch the tensors move through the loop</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">input x</span><span class="val">image features = [0.5, −0.3, 1.2, 0.1]</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">forward</span><span class="val">logits z = Wx + b = [1.2, 2.4, 0.3]</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">softmax</span><span class="val">p̂ = [0.180, 0.598, 0.222]   (exp(z) / Σ exp(z))</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">label y</span><span class="val">true class = 1  →  one-hot = [0, 1, 0]</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">loss ℒ</span><span class="val">−log(p̂_1) = −log(0.598) = <b>0.514</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">∂ℒ/∂z</span><span class="val">p̂ − y = [0.180, <b>−0.402</b>, 0.222]   ← class 1 wants higher logit</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">∂ℒ/∂W</span><span class="val">(∂ℒ/∂z) ⊗ x   (outer product)</span><span class="sh">(3,4)</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">update</span><span class="val">W ← W − 0.01·∂ℒ/∂W   →  row 1 of W shifts toward x; rows 0,2 shift away</span><span class="sh">(3,4)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🧭</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Forward, Loss, Backward, Update, Zero” — <span class="tagline">F-L-B-U-Z.</span></p>
+        <p>And the one-liner that unifies the course: <b>every loss is a disguised negative log-likelihood</b>. When you see MSE, think Gaussian likelihood; when you see cross-entropy, think categorical likelihood.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q1</span><h3>Likelihood &amp; the learning signal</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">A generative model is said to "learn the data distribution."</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Contrast the generative objective \(p_\theta(x)\) with a discriminative objective \(p(y\!\mid\!x)\), and state what each lets you <i>do</i>.</li>
+          <li><span class="lbl">(b)</span> Show that minimizing cross-entropy is equivalent to maximum-likelihood estimation. Why must a loss be scalar and differentiable?</li>
+          <li><span class="lbl">(c)</span> Walk through the five-step training loop and say which step the loss equation actually feeds into.</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) Generative vs discriminative</h5>
+          <p>A <b>discriminative</b> model learns the conditional \(p(y\!\mid\!x)\): given an input, output a label — good for classifying/predicting but it cannot invent new \(x\). A <b>generative</b> model learns the full density \(p_\theta(x)\) (or joint \(p(x,y)\)); once you have \(p_\theta(x)\) you can <b>sample</b> brand-new, realistic, diverse examples on demand. Generative answers "what does the data look like?"; discriminative answers "given this data, what is it?"</p>
+          <h5>(b) Cross-entropy = MLE</h5>
+          <p>Maximum likelihood maximizes \(\sum_i \log p_\theta(x_i)\). Negating and averaging gives the cross-entropy between the data and the model, \(-\mathbb{E}[\log p_\theta(x)]\), so <b>maximizing likelihood ≡ minimizing cross-entropy</b>. The loss must be a single <b>scalar</b> so we can rank "more wrong vs less wrong," and <b>differentiable</b> so autograd can compute \(\partial \mathcal{L}/\partial\theta\) for gradient descent.</p>
+          <h5>(c) Where the loss enters the loop</h5>
+          <p>Forward → <b>compute loss</b> → backward → update → zero. The loss equation is evaluated at step 2; its gradient (step 3) is what flows back to nudge \(\theta\) at step 4. The loss <i>defines what "learning" even means</i> — change the loss and you change the whole behavior of the same loop.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 2: GANs ============ -->
+  <section class="topic" data-t="1">
+    <div class="t-head">
+      <div class="t-tag">Topic 2 · Module 3</div>
+      <h2 class="t-title">GANs: The Adversarial Minimax Game</h2>
+      <p class="t-idea">Two networks play a <span class="hl">zero-sum game</span>: a generator turns noise into fakes, a discriminator judges real vs fake. <span class="hl">No likelihood is computed</span> — the discriminator <i>is</i> the learned loss function.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative</div>
+        <div class="card-h">Noise → data</div>
+        <div class="eq">\[ x = G(z;\theta_g),\quad z\sim p(z) \]</div>
+        <ul class="decode">
+          <li><b>G</b> maps a noise vector into data space.</li>
+          <li><b>D(x; θ_d)</b> outputs the probability that \(x\) is real.</li>
+          <li>Sampling is <b>one forward pass</b> of G — fast.</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Minimax value function</div>
+        <div class="eq">\[ \min_{G}\max_{D}\; \mathbb{E}_{x\sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z\sim p(z)}[\log(1-D(G(z)))] \]</div>
+        <ul class="decode">
+          <li><b>D maximizes</b>: call real "real," fakes "fake."</li>
+          <li><b>G minimizes</b>: make \(D(G(z))\to 1\) (fool D).</li>
+          <li>Implicitly minimizes <b>Jensen–Shannon divergence</b>.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">Alternate two updates</div>
+        <ol class="steps">
+          <li><b>D-step</b>: ascend on real + fake — sharpen the judge</li>
+          <li><b>G-step</b>: descend so fakes look real</li>
+          <li>In practice G uses the <b>non-saturating</b> loss \(\max \log D(G(z))\)</li>
+          <li>Repeat — a moving target for both</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · the adversarial loop</div>
+      <svg viewBox="0 0 720 230" role="img" aria-label="GAN adversarial loop">
+        <rect class="svg-box" x="30" y="95" width="90" height="48" rx="9"/>
+        <text class="svg-lab" x="75" y="116" text-anchor="middle">noise z</text>
+        <text class="svg-sub" x="75" y="132" text-anchor="middle">z ~ p(z)</text>
+
+        <rect class="svg-box-g" x="170" y="90" width="110" height="58" rx="9"/>
+        <text class="svg-lab" x="225" y="114" text-anchor="middle">Generator G</text>
+        <text class="svg-sub" x="225" y="131" text-anchor="middle">fake = G(z)</text>
+
+        <rect class="svg-box" x="170" y="20" width="110" height="46" rx="9"/>
+        <text class="svg-lab" x="225" y="42" text-anchor="middle">real data x</text>
+        <text class="svg-sub" x="225" y="57" text-anchor="middle">x ~ p_data</text>
+
+        <rect class="svg-box-l" x="380" y="55" width="120" height="62" rx="9"/>
+        <text class="svg-lab" x="440" y="80" text-anchor="middle">Discriminator D</text>
+        <text class="svg-sub" x="440" y="98" text-anchor="middle">P(real) ∈ [0,1]</text>
+
+        <rect class="svg-box" x="580" y="55" width="110" height="62" rx="9"/>
+        <text class="svg-lab" x="635" y="80" text-anchor="middle">real / fake?</text>
+        <text class="svg-sub" x="635" y="98" text-anchor="middle">D(x), D(G(z))</text>
+
+        <path class="svg-ar" d="M120 119 H170" marker-end="url(#ga)"/>
+        <path class="svg-ar-g" d="M280 115 C320 110 340 95 380 90" marker-end="url(#gg)"/>
+        <path class="svg-ar" d="M280 43 C320 48 350 58 380 66" marker-end="url(#ga)"/>
+        <path class="svg-ar-l" d="M500 86 H580" marker-end="url(#gl)"/>
+
+        <!-- gradient feedback -->
+        <path class="svg-ar-t" d="M635 117 C635 175 440 185 440 119" marker-end="url(#gt)"/>
+        <text class="svg-sub" x="540" y="178" text-anchor="middle">grad → update D (ascend)</text>
+        <path class="svg-ar-t" d="M440 117 C440 205 225 215 225 150" marker-end="url(#gt)"/>
+        <text class="svg-sub" x="330" y="208" text-anchor="middle">grad through D → update G (descend / fool D)</text>
+
+        <defs>
+          <marker id="ga" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="gg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e9b949"/></marker>
+          <marker id="gl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
+          <marker id="gt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">D and G are trained <b>alternately</b>. The same minimax loss is read with opposite signs: D climbs it, G descends it.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">two gradients, one shared loss</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose the minimax</div>
+          <h4>One equation, read twice</h4>
+          <div class="eq">\[ V(D,G)=\underbrace{\mathbb{E}_{x}[\log D(x)]}_{\text{real term}} + \underbrace{\mathbb{E}_{z}[\log(1-D(G(z)))]}_{\text{fake term}} \]</div>
+          <ul class="term-list">
+            <li><span class="sym">D(x)</span>probability D assigns to x being <b>real</b>, in (0,1) (sigmoid output).</li>
+            <li><span class="sym">G(z)</span><b>fake sample</b> from noise z ∼ p(z); a single forward pass through G.</li>
+            <li><span class="sym">log D(x)</span>biggest when D(x)→1 → <b>D wants this</b> on real data.</li>
+            <li><span class="sym">log(1−D(G(z)))</span>biggest when D(G(z))→0 → <b>D wants this</b> on fakes.</li>
+            <li><b>G touches only term 2</b>; it wants D(G(z))→1 (opposite of D) → <b>zero-sum</b>.</li>
+            <li>Non-saturating G loss: <span class="sym">max log D(G(z))</span> → strong gradient when fakes are still bad.</li>
+            <li>Optimal D recovers <b>Jensen-Shannon divergence</b> between p_data and p_G.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>D ascends · G descends through D</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 160" role="img" aria-label="GAN gradient flow">
+              <rect class="svg-box" x="6" y="60" width="50" height="36" rx="6"/>
+              <text class="svg-lab" x="31" y="82" text-anchor="middle">z</text>
+              <rect class="svg-box-g" x="76" y="56" width="78" height="44" rx="7"/>
+              <text class="svg-lab" x="115" y="76" text-anchor="middle">G(z;θ_G)</text>
+              <text class="svg-sub" x="115" y="91" text-anchor="middle">generator</text>
+              <rect class="svg-box-l" x="174" y="56" width="80" height="44" rx="7"/>
+              <text class="svg-lab" x="214" y="76" text-anchor="middle">D(·;θ_D)</text>
+              <text class="svg-sub" x="214" y="91" text-anchor="middle">judge</text>
+              <rect class="svg-box-t" x="274" y="56" width="80" height="44" rx="7"/>
+              <text class="svg-lab" x="314" y="76" text-anchor="middle">V(D,G)</text>
+              <text class="svg-sub" x="314" y="91" text-anchor="middle">scalar</text>
+              <path class="svg-ar" d="M56 78 H76" marker-end="url(#ga2)"/>
+              <path class="svg-ar-g" d="M154 78 H174" marker-end="url(#gg2)"/>
+              <path class="svg-ar-l" d="M254 78 H274" marker-end="url(#gl2)"/>
+              <path class="svg-ar-t" d="M314 100 C314 138 214 138 214 100" marker-end="url(#gt2)"/>
+              <path class="svg-ar-t" d="M174 100 C160 138 115 138 115 100" marker-end="url(#gt2)" stroke-dasharray="3 3"/>
+              <text class="svg-sub" x="265" y="156" text-anchor="middle" fill="#ff8166">∇θ_D V (ascend)</text>
+              <text class="svg-sub" x="115" y="156" text-anchor="middle" fill="#ff8166">∇θ_G via D (descend)</text>
+              <defs>
+                <marker id="ga2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="gg2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="gl2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="gt2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">D-step</span>θ_D ← θ_D + η · ∇<sub>θ_D</sub>V <span class="note">ascend (push real↑, fake↓)</span></div>
+          <div class="derivline"><span class="lbl">G chain</span>∂ℒ_G/∂θ_G = ∂ℒ_G/∂D · ∂D/∂G(z) · ∂G(z)/∂θ_G <span class="note">G's gradient travels through D</span></div>
+          <div class="derivline"><span class="lbl">sat</span>If D(G(z))≈0: ∂log(1−D)/∂D ≈ 0 → <b>vanishing gradient</b> for G</div>
+          <div class="derivline"><span class="lbl">fix</span>∂log D(G(z))/∂D = 1/D(G(z)) → <b>huge</b> when D≈0 (non-sat loss saves G early)</div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · 2-dim toy data</div>
+          <h4>One D-step + one G-step, hand-computed</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">real x</span><span class="val">x = [0.90, 0.70]   (sampled from dataset)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">noise z</span><span class="val">z = [0.40, −0.20]   ∼ N(0, I)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">G(z)</span><span class="val">fake = [0.30, 0.60]   (early in training — far from real)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">D(real)</span><span class="val">σ(score) = 0.82   →  log D = −0.198</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">D(fake)</span><span class="val">σ(score) = 0.18   →  log(1−D) = log(0.82) = −0.198</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">D loss</span><span class="val">−(log 0.82 + log 0.82) = <b>0.397</b>   →  D updates to push real↑, fake↓</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">G loss (sat)</span><span class="val">log(1−0.18) = −0.198  →  ∂/∂D = −1/0.82 ≈ −1.22   (small, decaying)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">G loss (non-sat)</span><span class="val">−log(0.18) = <b>1.71</b>   →  ∂/∂D = −1/0.18 ≈ <b>−5.56</b>  (strong signal!)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">∂ℒ_G/∂fake</span><span class="val">−5.56 · ∂D/∂fake   →  pushes fake toward features D scores as "real"</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">∂ℒ_G/∂θ_G</span><span class="val">backprop through G(z) → tiny step toward real-cluster</span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🥊</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Counterfeiter vs Detective.”</p>
+        <p>The forger (G) and the cop (D) both improve by competing. The loss is <b>one equation read two ways</b>: <b class="teal">max</b> over D, <b class="teal">min</b> over G. Failure mode = <b>mode collapse</b> (forger only makes one good fake). G's gradient vanishes early, so we flip to the <b>non-saturating</b> form \(\max_G \log D(G(z))\).</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q2</span><h3>The minimax objective &amp; its training</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">Consider the vanilla GAN value function \(\min_G\max_D V(D,G)\).</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write \(V(D,G)\) and explain each of its two terms from D's point of view and from G's point of view.</li>
+          <li><span class="lbl">(b)</span> Describe the alternating training regime. Why is G trained with the non-saturating loss \(\max_G\log D(G(z))\) instead of \(\min_G\log(1-D(G(z)))\)?</li>
+          <li><span class="lbl">(c)</span> Explain mode collapse by referring back to the loss — why does the equation permit it?</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) The two terms</h5>
+          <div class="eq">\[ V(D,G)=\mathbb{E}_{x\sim p_{\text{data}}}[\log D(x)]+\mathbb{E}_{z}[\log(1-D(G(z)))] \]</div>
+          <p><b>D wants to maximize</b>: term 1 pushes \(D(x)\to 1\) on real data (\(\log D\) is largest near 1); term 2 pushes \(D(G(z))\to 0\) on fakes. <b>G wants to minimize</b>: G only touches term 2 and wants \(D(G(z))\to 1\) so \(\log(1-D(G(z)))\to-\infty\) — i.e. fool D. It's <b>zero-sum</b>: one's gain is the other's loss.</p>
+          <h5>(b) Alternating + non-saturating G</h5>
+          <p>Each iteration we take a <b>gradient ascent step on D</b> (sharpen the judge), then a <b>gradient descent step on G</b> (fool the sharpened judge). Early on, fakes are obviously fake, so \(D(G(z))\approx 0\); the term \(\log(1-D(G(z)))\) is then <b>flat → near-zero gradient</b> for G (the saturation problem). Flipping to \(\max_G \log D(G(z))\) gives strong gradients exactly when G is losing, so G keeps learning.</p>
+          <h5>(c) Why the loss allows mode collapse</h5>
+          <p>The objective only asks G to make samples D <i>cannot tell apart</i> from real — it never rewards <b>diversity</b>. So G can find one "easy win" output that always fools the current D and produce only that, collapsing many modes into one. Because feedback comes solely from D (no likelihood term covering the whole distribution), nothing in the equation forces full coverage.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 3: ADVANCED GANs ============ -->
+  <section class="topic" data-t="2">
+    <div class="t-head">
+      <div class="t-tag">Topic 3 · Module 4</div>
+      <h2 class="t-title">Advanced GANs: Conditioning &amp; Cycle Consistency</h2>
+      <p class="t-idea">Same adversarial backbone, two new ideas. <span class="hl">Conditional GANs</span> add a label \(y\) to both players. <span class="hl">CycleGAN</span> translates between unpaired domains using a <i>cycle-consistency</i> loss instead of paired data.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative</div>
+        <div class="card-h">Condition &amp; translate</div>
+        <div class="eq">\[ \text{cGAN: } x=G(z,y)\;\;\;\; \text{Cycle: } G\!:\!A\!\to\!B,\; F\!:\!B\!\to\!A \]</div>
+        <ul class="decode">
+          <li><b>cGAN</b>: feed label \(y\) to both G and D → controllable output.</li>
+          <li><b>CycleGAN</b>: two generators (\(G,F\)) + two discriminators (\(D_X,D_Y\)).</li>
+          <li>Translate <b>unpaired</b> images (horse↔zebra).</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Conditioned + cycle term</div>
+        <div class="eq">\[ \min_G\max_D \mathbb{E}_{x,y}[\log D(x,y)]+\mathbb{E}_{z,y}[\log(1-D(G(z,y),y))] \]</div>
+        <div class="eq">\[ \mathcal{L}=\mathcal{L}_{GAN}(G,D_Y)+\mathcal{L}_{GAN}(F,D_X)+\lambda\,\mathcal{L}_{cyc}(G,F) \]</div>
+        <ul class="decode">
+          <li><b>Cycle:</b> \(F(G(a))\approx a\) and \(G(F(b))\approx b\).</li>
+          <li><b>λ</b> trades style realism vs content preservation.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">Adversarial + reconstruction</div>
+        <ol class="steps">
+          <li>Pair every input with its <b>condition y</b> (cGAN)</li>
+          <li>Train both GANs adversarially (as Topic 2)</li>
+          <li>Add the <b>cycle L1 penalty</b> so round-trips return the input</li>
+          <li>λ too small → arbitrary mapping; too big → output ≈ input</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · CycleGAN round-trip</div>
+      <svg viewBox="0 0 720 210" role="img" aria-label="CycleGAN cycle">
+        <rect class="svg-box" x="40" y="80" width="90" height="50" rx="9"/>
+        <text class="svg-lab" x="85" y="100" text-anchor="middle">image a</text>
+        <text class="svg-sub" x="85" y="116" text-anchor="middle">domain A</text>
+
+        <rect class="svg-box-g" x="290" y="30" width="120" height="52" rx="9"/>
+        <text class="svg-lab" x="350" y="52" text-anchor="middle">G : A → B</text>
+        <text class="svg-sub" x="350" y="69" text-anchor="middle">make B-style</text>
+
+        <rect class="svg-box" x="560" y="80" width="100" height="50" rx="9"/>
+        <text class="svg-lab" x="610" y="100" text-anchor="middle">fake b</text>
+        <text class="svg-sub" x="610" y="116" text-anchor="middle">judged by D_Y</text>
+
+        <rect class="svg-box-g" x="290" y="128" width="120" height="52" rx="9"/>
+        <text class="svg-lab" x="350" y="150" text-anchor="middle">F : B → A</text>
+        <text class="svg-sub" x="350" y="167" text-anchor="middle">map back</text>
+
+        <path class="svg-ar-g" d="M130 95 C200 70 240 58 290 56" marker-end="url(#cg)"/>
+        <path class="svg-ar-g" d="M410 56 C480 60 520 75 560 90" marker-end="url(#cg)"/>
+        <path class="svg-ar-g" d="M560 120 C520 150 470 158 410 156" marker-end="url(#cg)"/>
+        <path class="svg-ar-t" d="M290 156 C220 150 160 135 130 118" marker-end="url(#ct)"/>
+        <text class="svg-sub" x="180" y="150" text-anchor="middle" fill="#ff8166">cycle: F(G(a)) ≈ a</text>
+
+        <defs>
+          <marker id="cg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e9b949"/></marker>
+          <marker id="ct" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">Two adversarial losses keep each domain realistic; the <b>cycle term</b> (coral) is the only thing tying \(a\) to its translation when there are no paired examples.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">conditioning + the cycle penalty</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose the full objective</div>
+          <h4>Two GANs glued by one L1</h4>
+          <div class="eq">\[ \mathcal{L}=\mathcal{L}_{GAN}(G,D_Y)+\mathcal{L}_{GAN}(F,D_X)+\lambda\,\underbrace{\big(\mathbb{E}_a\|F(G(a))-a\|_1+\mathbb{E}_b\|G(F(b))-b\|_1\big)}_{\mathcal{L}_{cyc}} \]</div>
+          <ul class="term-list">
+            <li><span class="sym">G : A→B</span> & <span class="sym">F : B→A</span>two generators (horse→zebra and back).</li>
+            <li><span class="sym">D_X, D_Y</span>one discriminator per domain — judges realism in A and B.</li>
+            <li><span class="sym">‖·‖₁</span><b>L1 norm</b> (sum of absolute pixel diffs) → sharper than L2 for images.</li>
+            <li><span class="sym">λ</span>cycle weight, typically <b>10</b>. λ ↓ = arbitrary mapping; λ ↑ = output ≈ input.</li>
+            <li><b>cGAN</b> simpler: swap <span class="sym">x</span> → <span class="sym">(x,y)</span> in vanilla GAN; both terms now condition on label y.</li>
+            <li>No paired data needed — cycle alone ties input to output.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>G feels three forces at once</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 170" role="img" aria-label="CycleGAN gradient sources">
+              <rect class="svg-box" x="10" y="70" width="48" height="38" rx="6"/>
+              <text class="svg-lab" x="34" y="93" text-anchor="middle">a</text>
+              <rect class="svg-box-g" x="80" y="66" width="68" height="46" rx="7"/>
+              <text class="svg-lab" x="114" y="88" text-anchor="middle">G(a)</text>
+              <rect class="svg-box-l" x="170" y="20" width="80" height="38" rx="7"/>
+              <text class="svg-lab" x="210" y="44" text-anchor="middle">D_Y(G(a))</text>
+              <rect class="svg-box-g" x="170" y="118" width="80" height="40" rx="7"/>
+              <text class="svg-lab" x="210" y="142" text-anchor="middle">F(G(a))</text>
+              <rect class="svg-box-t" x="278" y="118" width="76" height="40" rx="7"/>
+              <text class="svg-lab" x="316" y="142" text-anchor="middle">‖·−a‖₁</text>
+              <path class="svg-ar" d="M58 89 H80" marker-end="url(#ca3)"/>
+              <path class="svg-ar-g" d="M148 80 C158 60 165 45 170 42" marker-end="url(#cg3)"/>
+              <path class="svg-ar-g" d="M148 100 C158 122 165 138 170 138" marker-end="url(#cg3)"/>
+              <path class="svg-ar-t" d="M250 138 H278" marker-end="url(#ct3)"/>
+              <text class="svg-sub" x="180" y="167" text-anchor="middle" fill="#ff8166">∂(ℒ_GAN + λ·ℒ_cyc)/∂θ_G = sum of three sources</text>
+              <defs>
+                <marker id="ca3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="cg3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="ct3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">①</span>∂ℒ/∂θ_G = ∂ℒ_GAN(G,D_Y)/∂θ_G + λ·∂ℒ_cyc/∂θ_G <span class="note">two summed sources</span></div>
+          <div class="derivline"><span class="lbl">②</span>∂‖F(G(a))−a‖₁/∂G(a) = F<sup>T</sup>·sign(F(G(a))−a) <span class="note">L1 deriv = sign(·)</span></div>
+          <div class="derivline"><span class="lbl">③</span>Cycle grad flows <b>through F first</b>, then back into G — F's weights act as a fixed conduit on that step</div>
+          <div class="derivline"><span class="lbl">λ trade</span>λ scales <b>how strongly content-preservation competes with realism</b></div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · cycle round-trip (3-pixel patch)</div>
+          <h4>Horse → Zebra → Horse</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">input a</span><span class="val">horse patch = [0.50, 0.80, 0.30]   (RGB-ish)</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">G(a)</span><span class="val">zebra patch = [0.30, 0.60, 0.25]</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">D_Y(G(a))</span><span class="val">= 0.42   →  log(1−0.42) = −0.545   (D not fooled yet)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">F(G(a))</span><span class="val">round-trip back = [0.48, 0.79, 0.31]</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">cyc residual</span><span class="val">F(G(a)) − a = [−0.02, −0.01, +0.01]</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">‖·‖₁</span><span class="val">|−0.02| + |−0.01| + |+0.01| = <b>0.04</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">λ·cyc</span><span class="val">10 · 0.04 = <b>0.40</b>   (cycle dominates GAN here — 0.40 ≫ 0.05 typical adv term)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">sign vec</span><span class="val">sign(residual) = [−1, −1, +1]   ← gradient direction from L1</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">∂cyc/∂G(a)</span><span class="val">F<sup>T</sup>·[−1,−1,+1]   →  pushes G(a) so F(G(a)) lands closer to a</span><span class="sh">(3,)</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">total ∂/∂θ_G</span><span class="val">∂GAN + 10·∂cyc  →  G must <b>fool D_Y AND stay invertible</b> through F</span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🔁</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Translate, then translate back — you should be home.”</p>
+        <p>cGAN = <b>vanilla GAN + a label glued to both terms</b>. CycleGAN = <b>2 GANs + 1 round-trip rule</b>. The cycle loss replaces missing paired data: realism comes from the discriminators, <b>meaning</b> comes from the cycle.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q3</span><h3>From conditioning to cycle consistency</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">Both cGAN and CycleGAN extend the basic adversarial loss.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write the conditional minimax objective and explain the single change from vanilla GAN.</li>
+          <li><span class="lbl">(b)</span> Write CycleGAN's full objective and explain what the cycle-consistency term enforces and why it is needed for <i>unpaired</i> data.</li>
+          <li><span class="lbl">(c)</span> Explain the role of \(\lambda\): what happens at the two extremes?</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) Conditional GAN</h5>
+          <div class="eq">\[ \min_G\max_D \mathbb{E}_{x,y}[\log D(x,y)] + \mathbb{E}_{z,y}[\log(1-D(G(z,y),y))] \]</div>
+          <p>Structurally identical to vanilla GAN — the <b>only change is that both terms are conditioned on \(y\)</b>. The label is fed to G (so it generates a specific class) and to D (so it judges "is this a real <i>y</i>?"). This makes generation <b>controllable</b>.</p>
+          <h5>(b) CycleGAN objective</h5>
+          <div class="eq">\[ \mathcal{L}=\mathcal{L}_{GAN}(G,D_Y)+\mathcal{L}_{GAN}(F,D_X)+\lambda\,\mathcal{L}_{cyc}(G,F) \]</div>
+          <p>Two GANs translate \(A\!\to\!B\) and \(B\!\to\!A\). The cycle term enforces \(F(G(a))\approx a\) and \(G(F(b))\approx b\) (an L1 reconstruction). With <b>no paired data</b>, the discriminators only guarantee the output <i>looks</i> like the target domain — they don't tie it to the specific input. The cycle constraint is what forces the translation to <b>preserve content</b>, ruling out arbitrary mappings.</p>
+          <h5>(c) The weight λ</h5>
+          <p>\(\lambda\) balances <b>style realism vs content preservation</b>. Too small → the cycle barely matters, mappings become arbitrary (you lose the original content). Too large → the network plays it safe and outputs something almost identical to the input (little translation happens).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 4: VAE ============ -->
+  <section class="topic" data-t="3">
+    <div class="t-head">
+      <div class="t-tag">Topic 4 · Module 5</div>
+      <h2 class="t-title">Autoencoders &amp; VAEs: The ELBO</h2>
+      <p class="t-idea">A VAE makes the latent space <span class="hl">probabilistic</span>. Because \(\log p(x)\) is intractable, we maximize a <span class="hl">lower bound (ELBO)</span> = reconstruct well <b>+</b> keep the latent close to a prior. The reparameterization trick makes sampling differentiable.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative</div>
+        <div class="card-h">Sample latent → decode</div>
+        <div class="eq">\[ z\sim\mathcal{N}(0,I),\qquad x\sim p_\theta(x\mid z) \]</div>
+        <ul class="decode">
+          <li>Encoder \(q_\phi(z\!\mid\!x)\) outputs \(\mu,\sigma\) — a <b>distribution</b>, not a point.</li>
+          <li><b>Reparameterize:</b> \(z=\mu+\sigma\odot\epsilon,\;\epsilon\sim\mathcal{N}(0,I)\).</li>
+          <li>Decoder \(p_\theta(x\!\mid\!z)\) reconstructs \(x\).</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Maximize ELBO (= min −ELBO)</div>
+        <div class="eq">\[ \mathcal{L}=\underbrace{\mathbb{E}_{q_\phi}[\log p_\theta(x\mid z)]}_{\text{reconstruction}}-\beta\,\underbrace{\mathrm{KL}\!\big(q_\phi(z\mid x)\,\|\,p(z)\big)}_{\text{regularize latent}} \]</div>
+        <ul class="decode">
+          <li>Guarantee: \(\log p(x)\ge \text{ELBO}(x)\).</li>
+          <li>Recon → fidelity; KL → smooth, structured latent.</li>
+          <li><b>β-VAE:</b> higher β → more disentangled, blurrier.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">One joint optimization</div>
+        <ol class="steps">
+          <li>Encode \(x\) → \((\mu,\sigma)\)</li>
+          <li><b>Reparameterize</b> to sample \(z\) (keeps gradients flowing)</li>
+          <li>Decode → \(\hat{x}\); compute recon + KL</li>
+          <li>Backprop through <b>both</b> nets at once — stable, no minimax</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · the VAE pipeline</div>
+      <svg viewBox="0 0 720 220" role="img" aria-label="VAE pipeline">
+        <rect class="svg-box" x="20" y="85" width="80" height="50" rx="9"/>
+        <text class="svg-lab" x="60" y="106" text-anchor="middle">x</text>
+        <text class="svg-sub" x="60" y="122" text-anchor="middle">input</text>
+
+        <rect class="svg-box-g" x="135" y="80" width="110" height="60" rx="9"/>
+        <text class="svg-lab" x="190" y="104" text-anchor="middle">Encoder q_φ</text>
+        <text class="svg-sub" x="190" y="121" text-anchor="middle">→ μ , σ</text>
+
+        <rect class="svg-box-l" x="290" y="80" width="120" height="60" rx="9"/>
+        <text class="svg-lab" x="350" y="100" text-anchor="middle">reparam.</text>
+        <text class="svg-sub" x="350" y="117" text-anchor="middle">z = μ + σ⊙ε</text>
+        <text class="svg-sub" x="350" y="132" text-anchor="middle">ε ~ N(0,I)</text>
+
+        <rect class="svg-box-g" x="455" y="80" width="110" height="60" rx="9"/>
+        <text class="svg-lab" x="510" y="104" text-anchor="middle">Decoder p_θ</text>
+        <text class="svg-sub" x="510" y="121" text-anchor="middle">x | z</text>
+
+        <rect class="svg-box" x="610" y="85" width="80" height="50" rx="9"/>
+        <text class="svg-lab" x="650" y="106" text-anchor="middle">x̂</text>
+        <text class="svg-sub" x="650" y="122" text-anchor="middle">recon</text>
+
+        <path class="svg-ar" d="M100 110 H135" marker-end="url(#va)"/>
+        <path class="svg-ar-g" d="M245 110 H290" marker-end="url(#vg)"/>
+        <path class="svg-ar-l" d="M410 110 H455" marker-end="url(#vl)"/>
+        <path class="svg-ar-g" d="M565 110 H610" marker-end="url(#vg)"/>
+
+        <!-- loss arrows -->
+        <path class="svg-ar-l" d="M650 135 C650 185 350 195 350 142" marker-end="url(#vl)"/>
+        <text class="svg-sub" x="500" y="190" text-anchor="middle" fill="#4fd1c5">reconstruction: ||x − x̂||²</text>
+        <path class="svg-ar-l" d="M190 140 C190 175 280 178 340 150" marker-end="url(#vl)"/>
+        <text class="svg-sub" x="210" y="170" text-anchor="middle" fill="#4fd1c5">KL(q‖N(0,I))</text>
+
+        <defs>
+          <marker id="va" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="vg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e9b949"/></marker>
+          <marker id="vl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">The trick: random \(\epsilon\) carries the noise, so the path \(x\!\to\!\mu,\sigma\!\to\!z\) stays <b>differentiable</b> and gradients reach the encoder.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">ELBO terms + reparam gradient</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose the ELBO</div>
+          <h4>Reconstruction − KL</h4>
+          <div class="eq">\[ \mathcal{L}=\underbrace{\mathbb{E}_{q_\phi}[\log p_\theta(x\mid z)]}_{\text{recon}}\;-\;\beta\,\underbrace{\mathrm{KL}\!\big(q_\phi(z\mid x)\,\|\,\mathcal{N}(0,I)\big)}_{\text{regularize}} \]</div>
+          <div class="eq">\[ \mathrm{KL}\big(\mathcal{N}(\mu,\sigma^2)\,\|\,\mathcal{N}(0,1)\big)=\tfrac12\sum_i\big(\mu_i^2+\sigma_i^2-\log\sigma_i^2-1\big) \]</div>
+          <ul class="term-list">
+            <li><span class="sym">q_φ(z|x)</span>encoder — outputs μ and σ per latent dim (a distribution, not a point).</li>
+            <li><span class="sym">p_θ(x|z)</span>decoder; Gaussian likelihood ⇒ recon term = <b>‖x−x̂‖²</b> (MSE).</li>
+            <li><span class="sym">KL</span><b>closed form</b> for two Gaussians (above) — no sampling required.</li>
+            <li><span class="sym">μ²</span>pulls posterior mean toward 0; <span class="sym">σ²−log σ²</span>pulls variance toward 1.</li>
+            <li><span class="sym">β</span>weight on KL. β=1: ELBO. β &gt; 1: β-VAE → <b>disentangled but blurrier</b>.</li>
+            <li>Guarantee: <span class="sym">log p(x) ≥ ELBO</span> — raising the bound raises the true likelihood.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>Reparam keeps the path differentiable</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 170" role="img" aria-label="VAE reparam gradient">
+              <rect class="svg-box" x="4" y="72" width="44" height="38" rx="6"/>
+              <text class="svg-lab" x="26" y="95" text-anchor="middle">x</text>
+              <rect class="svg-box-g" x="60" y="66" width="68" height="48" rx="7"/>
+              <text class="svg-lab" x="94" y="86" text-anchor="middle">enc q_φ</text>
+              <text class="svg-sub" x="94" y="101" text-anchor="middle">μ, σ</text>
+              <rect class="svg-box-t" x="148" y="20" width="62" height="32" rx="6"/>
+              <text class="svg-lab" x="179" y="40" text-anchor="middle">ε∼N(0,I)</text>
+              <rect class="svg-box-l" x="148" y="70" width="74" height="42" rx="7"/>
+              <text class="svg-lab" x="185" y="90" text-anchor="middle">z = μ+σ·ε</text>
+              <rect class="svg-box-g" x="242" y="66" width="66" height="48" rx="7"/>
+              <text class="svg-lab" x="275" y="86" text-anchor="middle">dec p_θ</text>
+              <text class="svg-sub" x="275" y="101" text-anchor="middle">x̂</text>
+              <rect class="svg-box-l" x="320" y="66" width="36" height="48" rx="7"/>
+              <text class="svg-lab" x="338" y="92" text-anchor="middle">ℒ</text>
+              <path class="svg-ar" d="M48 91 H60" marker-end="url(#va4)"/>
+              <path class="svg-ar-g" d="M128 91 H148" marker-end="url(#vg4)"/>
+              <path class="svg-ar-t" d="M179 52 V70" marker-end="url(#vt4)" stroke-dasharray="3 3"/>
+              <path class="svg-ar-l" d="M222 91 H242" marker-end="url(#vl4)"/>
+              <path class="svg-ar-g" d="M308 91 H320" marker-end="url(#vg4)"/>
+              <path class="svg-ar-t" d="M338 114 C338 158 94 158 94 114" marker-end="url(#vt4)"/>
+              <text class="svg-sub" x="200" y="168" text-anchor="middle" fill="#ff8166">gradient flows through z back into μ,σ — but NOT through ε (random)</text>
+              <defs>
+                <marker id="va4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="vg4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="vl4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="vt4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">key</span>∂z/∂μ = 1, ∂z/∂σ = ε <span class="note">μ,σ now <b>differentiable</b> functions of x</span></div>
+          <div class="derivline"><span class="lbl">recon</span>∂ℒ_rec/∂μ = ∂ℒ_rec/∂z · 1 <span class="note">direct through z</span></div>
+          <div class="derivline"><span class="lbl">recon</span>∂ℒ_rec/∂σ = ∂ℒ_rec/∂z · ε <span class="note">ε is the multiplicative carry</span></div>
+          <div class="derivline"><span class="lbl">KL</span>∂KL/∂μ = μ, ∂KL/∂σ = σ − 1/σ <span class="note">closed-form, no Monte Carlo</span></div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · 2-dim latent</div>
+          <h4>Encode → reparam → decode → loss → grads</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">input x</span><span class="val">x = [0.40, 0.70, 0.20, 0.90]   (4-pixel toy)</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">encoder</span><span class="val">μ = [0.30, −0.10],   σ = [1.20, 0.90]</span><span class="sh">(2,),(2,)</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">sample ε</span><span class="val">ε = [0.50, −0.30]   ∼ N(0, I)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">reparam z</span><span class="val">z = μ + σ⊙ε = [0.30 + 1.20·0.50,  −0.10 + 0.90·(−0.30)] = [<b>0.900, −0.370</b>]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">decoder</span><span class="val">x̂ = [0.42, 0.65, 0.25, 0.88]</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">recon</span><span class="val">‖x−x̂‖² = 0.02² + 0.05² + 0.05² + 0.02² = <b>0.0058</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">KL term0</span><span class="val">½·(0.30² + 1.20² − log(1.44) − 1) = ½·(0.09 + 1.44 − 0.365 − 1) = <b>0.083</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">KL term1</span><span class="val">½·((−0.10)² + 0.90² − log(0.81) − 1) = ½·(0.01 + 0.81 + 0.211 − 1) = <b>0.016</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">total KL</span><span class="val">0.083 + 0.016 = <b>0.098</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">total ℒ</span><span class="val">recon + β·KL  (β=1) = 0.0058 + 0.098 = <b>0.104</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑪</span><span class="op">∂ℒ/∂μ</span><span class="val">∂rec/∂z · 1 + μ_vec = (small) + [0.30, −0.10]   → μ shrinks toward 0</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑫</span><span class="op">∂ℒ/∂σ</span><span class="val">∂rec/∂z · ε + (σ − 1/σ) = ... + [0.367, −0.211]   → σ heads toward 1</span><span class="sh">(2,)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🎚️</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Rebuild it (recon) but stay near home (KL).”</p>
+        <p>ELBO = <b>Recon − β·KL</b>. The reparameterization trick is "<b>noise on the outside, gradient on the inside</b>." Expect VAE outputs to be <b>smooth/blurry</b> — the Gaussian likelihood predicts the <i>mean</i> under uncertainty.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q4</span><h3>The ELBO &amp; the reparameterization trick</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">A VAE is trained by maximizing the Evidence Lower Bound.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write the ELBO and name its two terms. What does each one push the model to do?</li>
+          <li><span class="lbl">(b)</span> Why do we optimize a lower bound at all instead of \(\log p(x)\) directly?</li>
+          <li><span class="lbl">(c)</span> State the reparameterization trick and explain precisely how it makes the training regime work. Why are VAE samples typically blurry?</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) The ELBO terms</h5>
+          <div class="eq">\[ \text{ELBO}= \mathbb{E}_{q_\phi(z\mid x)}[\log p_\theta(x\mid z)] - \mathrm{KL}\!\big(q_\phi(z\mid x)\,\|\,p(z)\big) \]</div>
+          <p><b>Reconstruction term</b> rewards decoding \(z\) back into the original \(x\) (fidelity). <b>KL term</b> pulls the encoder's posterior toward the prior \(\mathcal{N}(0,I)\), giving a <b>smooth, continuous, interpolatable</b> latent space and preventing the encoder from cheating by spreading codes arbitrarily.</p>
+          <h5>(b) Why a lower bound</h5>
+          <p>\(\log p(x)=\log\int p_\theta(x\mid z)p(z)\,dz\) is <b>intractable</b> (integrating over all latents). The ELBO is a tractable quantity with the guarantee \(\log p(x)\ge\text{ELBO}\), so pushing the bound up pushes the true likelihood up too — and every term in the ELBO is computable and differentiable.</p>
+          <h5>(c) Reparameterization &amp; blurriness</h5>
+          <p>Sampling \(z\sim\mathcal{N}(\mu,\sigma^2)\) is non-differentiable. We rewrite it as \(z=\mu+\sigma\odot\epsilon,\ \epsilon\sim\mathcal{N}(0,I)\): the randomness is moved into \(\epsilon\), so \(z\) is now a <b>differentiable function of \(\mu,\sigma\)</b> and gradients flow back through the encoder. This lets us train encoder + decoder <b>jointly in one optimization</b> (no minimax). Outputs are blurry because the Gaussian, pixel-wise-independent likelihood makes the decoder predict the <b>mean</b> under uncertainty, averaging plausible details together.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 5: SEQUENCE MODELS ============ -->
+  <section class="topic" data-t="4">
+    <div class="t-head">
+      <div class="t-tag">Topic 5 · Module 6</div>
+      <h2 class="t-title">Sequence Models: RNN / LSTM</h2>
+      <p class="t-idea">Generate sequences <span class="hl">one step at a time</span>, carrying a hidden state as memory. The generative law is a <span class="hl">recurrence</span>; the loss is next-step cross-entropy; training is <span class="hl">backpropagation through time</span>.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative</div>
+        <div class="card-h">Hidden-state recurrence</div>
+        <div class="eq">\[ h_t=f(h_{t-1},x_t;\theta) \]</div>
+        <div class="eq">\[ p(x)=\prod_{t} p(x_t\mid x_{<t}) \]</div>
+        <ul class="decode">
+          <li>State \(h_t\) is a <b>summary of all past inputs</b>.</li>
+          <li>Autoregressive: predict the next token from history.</li>
+          <li><b>LSTM</b> adds gates → keeps long-term dependencies.</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Cross-entropy per step</div>
+        <div class="eq">\[ \mathcal{L}=-\sum_{t}\log P(x_t\mid x_{<t}) \]</div>
+        <ul class="decode">
+          <li>Sum of next-token negative log-likelihoods.</li>
+          <li>Penalizes each wrong prediction along the sequence.</li>
+          <li>Same NLL idea as Topic 1 — applied stepwise.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">Backprop Through Time</div>
+        <ol class="steps">
+          <li><b>Forward</b> through the <i>whole</i> sequence, accumulating loss</li>
+          <li><b>Backward</b> through the whole sequence to get gradients</li>
+          <li>Cannot skip / parallelize steps — \(h_5\) needs \(h_1..h_4\)</li>
+          <li>Long chains → vanishing/exploding gradients (LSTM gates help)</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · unrolled recurrence + BPTT</div>
+      <svg viewBox="0 0 720 220" role="img" aria-label="RNN unrolled">
+        <!-- cells -->
+        <g>
+          <rect class="svg-box-g" x="60"  y="90" width="90" height="50" rx="9"/>
+          <text class="svg-lab" x="105" y="120" text-anchor="middle">h₁</text>
+          <rect class="svg-box-g" x="240" y="90" width="90" height="50" rx="9"/>
+          <text class="svg-lab" x="285" y="120" text-anchor="middle">h₂</text>
+          <rect class="svg-box-g" x="420" y="90" width="90" height="50" rx="9"/>
+          <text class="svg-lab" x="465" y="120" text-anchor="middle">h₃</text>
+          <rect class="svg-box-g" x="600" y="90" width="90" height="50" rx="9"/>
+          <text class="svg-lab" x="645" y="120" text-anchor="middle">h₄</text>
+        </g>
+        <!-- forward state arrows -->
+        <path class="svg-ar-g" d="M150 115 H240" marker-end="url(#ra)"/>
+        <path class="svg-ar-g" d="M330 115 H420" marker-end="url(#ra)"/>
+        <path class="svg-ar-g" d="M510 115 H600" marker-end="url(#ra)"/>
+        <!-- inputs -->
+        <text class="svg-sub" x="105" y="172" text-anchor="middle">x₁</text>
+        <text class="svg-sub" x="285" y="172" text-anchor="middle">x₂</text>
+        <text class="svg-sub" x="465" y="172" text-anchor="middle">x₃</text>
+        <text class="svg-sub" x="645" y="172" text-anchor="middle">x₄</text>
+        <path class="svg-ar" d="M105 165 V143" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M285 165 V143" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M465 165 V143" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M645 165 V143" marker-end="url(#ra2)"/>
+        <!-- loss -->
+        <rect class="svg-box-l" x="300" y="20" width="120" height="40" rx="9"/>
+        <text class="svg-lab" x="360" y="45" text-anchor="middle">Loss (Σ CE)</text>
+        <path class="svg-ar" d="M105 90 C105 55 280 55 305 58" marker-end="url(#ra)"/>
+        <path class="svg-ar" d="M645 90 C645 55 420 55 415 58" marker-end="url(#ra)"/>
+        <!-- BPTT backward -->
+        <path class="svg-ar-t" d="M600 130 H510" marker-end="url(#rt)"/>
+        <path class="svg-ar-t" d="M420 130 H330" marker-end="url(#rt)"/>
+        <path class="svg-ar-t" d="M240 130 H150" marker-end="url(#rt)"/>
+        <text class="svg-sub" x="360" y="205" text-anchor="middle" fill="#ff8166">backward through time — gradients flow right → left</text>
+
+        <defs>
+          <marker id="ra"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e9b949"/></marker>
+          <marker id="ra2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="rt"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">The state chain (gold) is sequential — the <b>bottleneck</b>. Gradients (coral) must travel back through every step, which is why deep chains forget without LSTM gates.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">BPTT and the Jacobian product</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose the recurrence</div>
+          <h4>One state, T copies, shared weights</h4>
+          <div class="eq">\[ h_t=\tanh(W_h h_{t-1}+W_x x_t+b),\qquad \hat y_t=\mathrm{softmax}(W_o h_t) \]</div>
+          <div class="eq">\[ \mathcal{L}=-\sum_{t=1}^{T}\log P(x_t\mid x_{<t})=\sum_{t=1}^{T}\mathcal{L}_t \]</div>
+          <ul class="term-list">
+            <li><span class="sym">h_t</span>hidden state — running summary of x_1…x_t.</li>
+            <li><span class="sym">W_h, W_x, W_o, b</span><b>shared across all timesteps</b> (the same params reused T times).</li>
+            <li><span class="sym">tanh</span>squashes to (−1, 1); derivative 1 − tanh² ∈ (0, 1] → <b>always shrinks gradients</b>.</li>
+            <li><span class="sym">ℒ_t</span>per-step cross-entropy on the true next token; total = sum.</li>
+            <li><b>LSTM cell state</b> c_t = f_t⊙c_{t−1} + i_t⊙g_t → <b>additive</b> update → ∂c_t/∂c_{t−1} = f_t (gates near 1 preserve gradient).</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>Why long chains vanish</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 140" role="img" aria-label="BPTT Jacobian product">
+              <rect class="svg-box-g" x="6" y="56" width="54" height="42" rx="6"/>
+              <text class="svg-lab" x="33" y="81" text-anchor="middle">h₁</text>
+              <rect class="svg-box-g" x="78" y="56" width="54" height="42" rx="6"/>
+              <text class="svg-lab" x="105" y="81" text-anchor="middle">h₂</text>
+              <rect class="svg-box-g" x="150" y="56" width="54" height="42" rx="6"/>
+              <text class="svg-lab" x="177" y="81" text-anchor="middle">h₃</text>
+              <rect class="svg-box-g" x="222" y="56" width="54" height="42" rx="6"/>
+              <text class="svg-lab" x="249" y="81" text-anchor="middle">h_T</text>
+              <rect class="svg-box-l" x="294" y="56" width="56" height="42" rx="6"/>
+              <text class="svg-lab" x="322" y="81" text-anchor="middle">ℒ</text>
+              <path class="svg-ar-g" d="M60 77 H78" marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M132 77 H150" marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M204 77 H222" marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M276 77 H294" marker-end="url(#ra5)"/>
+              <path class="svg-ar-t" d="M294 98 C260 118 100 118 60 98" marker-end="url(#rt5)"/>
+              <text class="svg-sub" x="180" y="135" text-anchor="middle" fill="#ff8166">∂ℒ/∂h₁ = ∂ℒ/∂h_T · ∏(∂h_t/∂h_{t−1}) → product of T Jacobians</text>
+              <defs>
+                <marker id="ra5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="rt5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">jac</span>∂h_t/∂h_{t−1} = diag(1 − h_t²) · W_h <span class="note">tanh deriv × weight</span></div>
+          <div class="derivline"><span class="lbl">chain</span>∂ℒ_T/∂h_1 = ∏<sub>t=2..T</sub> (∂h_t/∂h_{t−1}) · ∂ℒ_T/∂h_T</div>
+          <div class="derivline"><span class="lbl">vanish</span>If ‖∂h/∂h‖ &lt; 1, product → 0 over many T → <b>early steps stop learning</b></div>
+          <div class="derivline"><span class="lbl">explode</span>If ‖·‖ &gt; 1: gradients blow up → NaN. Fix: gradient clipping.</div>
+          <div class="derivline"><span class="lbl">LSTM</span>c_t = f_t⊙c_{t−1} + i_t⊙g_t  →  ∂c_t/∂c_{t−1} = f_t (gate ≈ 1 → gradient flows)</div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · scalar RNN, 4 steps</div>
+          <h4>Watch the Jacobian product shrink</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">setup</span><span class="val">W_h = 0.6,  W_x = 0.8,  b = 0,  h₀ = 0</span><span class="sh">scalars</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">t = 1</span><span class="val">x₁ = 1.0  →  h₁ = tanh(0.6·0 + 0.8·1) = tanh(0.80) = <b>0.664</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">t = 2</span><span class="val">x₂ = 0.5  →  h₂ = tanh(0.6·0.664 + 0.8·0.5) = tanh(0.798) = <b>0.663</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">t = 3</span><span class="val">x₃ = −0.2  →  h₃ = tanh(0.6·0.663 − 0.16) = tanh(0.238) = <b>0.234</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">t = 4</span><span class="val">x₄ = 0.1  →  h₄ = tanh(0.6·0.234 + 0.08) = tanh(0.220) = <b>0.217</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">jac t=4</span><span class="val">(1 − h₄²)·W_h = (1 − 0.047)·0.6 = <b>0.572</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">jac t=3</span><span class="val">(1 − h₃²)·W_h = (1 − 0.055)·0.6 = <b>0.567</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">jac t=2</span><span class="val">(1 − h₂²)·W_h = (1 − 0.440)·0.6 = <b>0.336</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">∂ℒ/∂h₁</span><span class="val">∝ 0.572 · 0.567 · 0.336 = <b>0.109</b>   (already &lt;1/9 of ∂ℒ/∂h₄)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">extrapolate</span><span class="val">T = 50: product ≈ 0.5⁵⁰ ≈ <b>1e−15</b>  →  step 1 effectively frozen</span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">⛓️</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“A chain remembers — but only as far back as gradients survive.”</p>
+        <p>Generative = <b>recurrence \(h_t=f(h_{t-1},x_t)\)</b>. Loss = <b>summed next-token cross-entropy</b>. Training = <b>BPTT</b>. The sequential bottleneck (no skipping, no parallel) is exactly the pain Transformers were built to remove.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q5</span><h3>Recurrence, loss &amp; BPTT</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">RNNs and LSTMs model sequences autoregressively.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write the recurrence \(h_t=f(h_{t-1},x_t;\theta)\) and explain how it lets the model factor \(p(x)\) over time.</li>
+          <li><span class="lbl">(b)</span> State the training loss and link it to the maximum-likelihood idea from Topic 1.</li>
+          <li><span class="lbl">(c)</span> Explain backpropagation through time and the sequential bottleneck. What problem does it create for long sequences, and how do LSTM gates address it?</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) Recurrence → factorized likelihood</h5>
+          <p>Each step updates a hidden state \(h_t=f(h_{t-1},x_t;\theta)\), where \(h_t\) summarizes all inputs seen so far. Conditioning each prediction on \(h_{t-1}\) lets the model write the joint as a product of conditionals \(p(x)=\prod_t p(x_t\mid x_{<t})\) — an <b>autoregressive</b> factorization.</p>
+          <h5>(b) Loss</h5>
+          <div class="eq">\[ \mathcal{L}=-\sum_t \log P(x_t\mid x_{<t}) \]</div>
+          <p>This is the <b>summed next-token cross-entropy</b> — exactly the negative log-likelihood of the sequence. Minimizing it = maximizing the probability the model assigns to the true sequence, the same MLE principle as Topic 1, applied step by step.</p>
+          <h5>(c) BPTT &amp; the bottleneck</h5>
+          <p>We run the full sequence forward to accumulate the loss, then propagate gradients <b>backward through every timestep</b> (BPTT). Because \(h_t\) depends on \(h_{t-1}\), computation is strictly <b>sequential</b> — you can't skip or parallelize across time. Over long chains, repeated multiplication of Jacobians causes <b>vanishing or exploding gradients</b>, so early steps get little learning signal. <b>LSTM gates</b> (with an additive cell state) let information and gradients pass through largely unchanged, preserving long-term dependencies.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 6: TRANSFORMERS ============ -->
+  <section class="topic" data-t="5">
+    <div class="t-head">
+      <div class="t-tag">Topic 6 · Module 7</div>
+      <h2 class="t-title">Transformers: Attention &amp; Autoregressive Generation</h2>
+      <p class="t-idea">Replace the sequential chain with <span class="hl">attention</span>: every token looks at every other token <i>in parallel</i>. The generative model (GPT) is still autoregressive next-token prediction, trained with cross-entropy.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative</div>
+        <div class="card-h">Scaled dot-product attention</div>
+        <div class="eq">\[ \text{Attention}(Q,K,V)=\mathrm{softmax}\!\Big(\tfrac{QK^{\top}}{\sqrt{d_k}}\Big)V \]</div>
+        <ul class="decode">
+          <li><b>Q</b> = what I want, <b>K</b> = what each token offers, <b>V</b> = its content.</li>
+          <li>\(QK^{\top}\) → similarity; softmax → weights; weighted sum of \(V\).</li>
+          <li><b>Masked</b> self-attention → can't see future tokens (autoregressive).</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Next-token cross-entropy</div>
+        <div class="eq">\[ \mathcal{L}=-\sum_{t=1}^{n}\log P(x_t\mid x_1,\dots,x_{t-1}) \]</div>
+        <ul class="decode">
+          <li>Maximize probability of the correct next token.</li>
+          <li>Identical loss to RNNs — only the architecture changed.</li>
+          <li>Scaling by \(\sqrt{d_k}\) keeps softmax gradients stable.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">Teacher forcing, all positions at once</div>
+        <ol class="steps">
+          <li>Feed the true sequence; predict every next token <b>in parallel</b></li>
+          <li><b>Causal mask</b> blocks attention to future positions</li>
+          <li>Cross-entropy summed over all positions → one backward pass</li>
+          <li>No recurrence → fully parallel, scales to huge data</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · how one attention output is built</div>
+      <svg viewBox="0 0 720 210" role="img" aria-label="Attention computation">
+        <rect class="svg-box" x="40" y="30" width="80" height="42" rx="8"/>
+        <text class="svg-lab" x="80" y="56" text-anchor="middle">Q</text>
+        <rect class="svg-box" x="40" y="84" width="80" height="42" rx="8"/>
+        <text class="svg-lab" x="80" y="110" text-anchor="middle">K</text>
+        <rect class="svg-box" x="40" y="138" width="80" height="42" rx="8"/>
+        <text class="svg-lab" x="80" y="164" text-anchor="middle">V</text>
+
+        <rect class="svg-box-g" x="200" y="57" width="120" height="48" rx="9"/>
+        <text class="svg-lab" x="260" y="78" text-anchor="middle">scores</text>
+        <text class="svg-sub" x="260" y="95" text-anchor="middle">QKᵀ / √d_k</text>
+
+        <rect class="svg-box-l" x="380" y="57" width="120" height="48" rx="9"/>
+        <text class="svg-lab" x="440" y="78" text-anchor="middle">softmax</text>
+        <text class="svg-sub" x="440" y="95" text-anchor="middle">→ weights</text>
+
+        <rect class="svg-box-g" x="560" y="90" width="130" height="48" rx="9"/>
+        <text class="svg-lab" x="625" y="111" text-anchor="middle">output</text>
+        <text class="svg-sub" x="625" y="128" text-anchor="middle">Σ wᵢ Vᵢ</text>
+
+        <path class="svg-ar" d="M120 51 C160 55 175 70 200 75" marker-end="url(#ta)"/>
+        <path class="svg-ar" d="M120 105 C160 100 175 90 200 86" marker-end="url(#ta)"/>
+        <path class="svg-ar-g" d="M320 81 H380" marker-end="url(#tg)"/>
+        <path class="svg-ar-l" d="M500 81 C525 81 535 100 560 108" marker-end="url(#tl)"/>
+        <path class="svg-ar" d="M120 159 C300 159 420 150 560 124" marker-end="url(#ta)"/>
+        <text class="svg-sub" x="330" y="200" text-anchor="middle">V is re-weighted by the attention weights → context-aware output</text>
+
+        <defs>
+          <marker id="ta" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="tg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e9b949"/></marker>
+          <marker id="tl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">Compare (QKᵀ) → normalize (softmax) → aggregate (·V). The \(\sqrt{d_k}\) divisor stops large dot-products from making softmax peaky and gradients unstable.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">softmax attention end-to-end</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose attention</div>
+          <h4>Compare · normalize · aggregate</h4>
+          <div class="eq">\[ \text{Attention}(Q,K,V)=\underbrace{\mathrm{softmax}\!\Big(\tfrac{QK^{\top}}{\sqrt{d_k}}\Big)}_{\text{weights } A \text{ — shape (n,n)}}\;V \]</div>
+          <ul class="term-list">
+            <li><span class="sym">Q</span>shape <b>(n, d_k)</b> — n positions each ask a question.</li>
+            <li><span class="sym">K</span>shape <b>(n, d_k)</b> — each token publishes a key advertising its content.</li>
+            <li><span class="sym">V</span>shape <b>(n, d_v)</b> — each token's actual content payload.</li>
+            <li><span class="sym">QKᵀ</span>shape <b>(n, n)</b> — pairwise dot-product similarity matrix.</li>
+            <li><span class="sym">/√d_k</span>keeps variance ≈ 1 → softmax stays smooth → gradients stay alive.</li>
+            <li><span class="sym">A·V</span>shape <b>(n, d_v)</b> — each row = context-aware vector for that position.</li>
+            <li><b>Causal mask</b>: set future entries of QKᵀ to −∞ → softmax gives them weight 0.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>Through softmax to Q, K, V</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 160" role="img" aria-label="Attention gradient flow">
+              <rect class="svg-box" x="6" y="64" width="44" height="34" rx="6"/>
+              <text class="svg-lab" x="28" y="85" text-anchor="middle">x</text>
+              <rect class="svg-box-g" x="66" y="16" width="66" height="32" rx="6"/>
+              <text class="svg-lab" x="99" y="36" text-anchor="middle">Q = xW_Q</text>
+              <rect class="svg-box-g" x="66" y="62" width="66" height="32" rx="6"/>
+              <text class="svg-lab" x="99" y="82" text-anchor="middle">K = xW_K</text>
+              <rect class="svg-box-g" x="66" y="108" width="66" height="32" rx="6"/>
+              <text class="svg-lab" x="99" y="128" text-anchor="middle">V = xW_V</text>
+              <rect class="svg-box-l" x="148" y="36" width="84" height="32" rx="6"/>
+              <text class="svg-lab" x="190" y="56" text-anchor="middle">QKᵀ/√d_k</text>
+              <rect class="svg-box-l" x="148" y="84" width="84" height="32" rx="6"/>
+              <text class="svg-lab" x="190" y="104" text-anchor="middle">A = softmax</text>
+              <rect class="svg-box-t" x="248" y="60" width="102" height="36" rx="6"/>
+              <text class="svg-lab" x="299" y="83" text-anchor="middle">out = AV</text>
+              <path class="svg-ar" d="M50 81 H66" marker-end="url(#ta6)"/>
+              <path class="svg-ar-l" d="M132 32 C140 32 144 50 148 52" marker-end="url(#tl6)"/>
+              <path class="svg-ar-l" d="M132 78 C140 78 144 56 148 56" marker-end="url(#tl6)"/>
+              <path class="svg-ar-l" d="M232 52 C240 52 244 96 248 95" marker-end="url(#tl6)"/>
+              <path class="svg-ar-l" d="M232 100 C240 100 244 80 248 80" marker-end="url(#tl6)"/>
+              <path class="svg-ar" d="M132 124 C170 124 235 105 248 86" marker-end="url(#ta6)"/>
+              <text class="svg-sub" x="200" y="156" text-anchor="middle" fill="#ff8166">grads split: AV term + softmax-Jacobian term → Q, K, V → W_Q, W_K, W_V</text>
+              <defs>
+                <marker id="ta6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="tl6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">softmax</span>∂A_ij/∂s_ik = A_ij·(δ_jk − A_ik) <span class="note">classic softmax Jacobian</span></div>
+          <div class="derivline"><span class="lbl">to V</span>∂ℒ/∂V = Aᵀ · ∂ℒ/∂out <span class="note">cleanest path — just a matmul</span></div>
+          <div class="derivline"><span class="lbl">to Q</span>∂ℒ/∂Q = (∂ℒ/∂s · ∂s/∂Q) = (∂ℒ/∂s) · K / √d_k</div>
+          <div class="derivline"><span class="lbl">to K</span>∂ℒ/∂K = (∂ℒ/∂s)ᵀ · Q / √d_k <span class="note">symmetric to Q path</span></div>
+          <div class="derivline"><span class="lbl">no /√</span>large d_k: softmax peaky → A near onehot → softmax Jacobian ≈ 0 → <b>gradients vanish</b></div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · 2 tokens, d_k = 2</div>
+          <h4>One attention head, hand-computed</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">Q</span><span class="val">[[1, 0], [0, 1]]   (token1 asks dim0, token2 asks dim1)</span><span class="sh">(2,2)</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">K</span><span class="val">[[1, 0], [0, 1]]   (each key matches its own dim)</span><span class="sh">(2,2)</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">V</span><span class="val">[[5, 1], [2, 9]]</span><span class="sh">(2,2)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">QKᵀ</span><span class="val">[[1, 0], [0, 1]]   (similarity matrix)</span><span class="sh">(2,2)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">/ √d_k</span><span class="val">/ √2 = [[0.707, 0], [0, 0.707]]</span><span class="sh">(2,2)</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">softmax row</span><span class="val">A = [[<b>0.670, 0.330</b>], [0.330, 0.670]]   (mostly attend to self)</span><span class="sh">(2,2)</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">out token1</span><span class="val">0.670·[5,1] + 0.330·[2,9] = [3.35,0.67] + [0.66,2.97] = [<b>4.01, 3.64</b>]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">out token2</span><span class="val">0.330·[5,1] + 0.670·[2,9] = [<b>3.00, 6.36</b>]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">no /√ check</span><span class="val">w/o scaling: softmax = [[0.731, 0.269], …] — sharper distribution → ∂A/∂s smaller → less gradient</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">d_k=64 effect</span><span class="val">unscaled scores can be ~8 → softmax ≈ onehot → ∂softmax ≈ 0 → <b>training stalls</b></span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">👀</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Query asks, Keys answer, Values get mixed.”</p>
+        <p>Three steps: <b>compare → softmax → weighted sum</b>. Divide by <b>√d_k</b> (stability). The loss is the <b>same cross-entropy as RNNs</b>; the win is <b>parallelism</b> — attention removes the sequential bottleneck of Topic 5.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q6</span><h3>Attention &amp; the autoregressive objective</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">A GPT-style model generates text with self-attention.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write the scaled dot-product attention formula and explain the role of Q, K, V and the three computation steps.</li>
+          <li><span class="lbl">(b)</span> Why divide by \(\sqrt{d_k}\)? What goes wrong without it?</li>
+          <li><span class="lbl">(c)</span> Write the training loss and explain how teacher forcing + causal masking link it to the training regime. Why is this faster to train than an RNN?</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) Attention</h5>
+          <div class="eq">\[ \text{Attention}(Q,K,V)=\mathrm{softmax}\!\Big(\tfrac{QK^{\top}}{\sqrt{d_k}}\Big)V \]</div>
+          <p><b>Q</b> (query) = the information a position is looking for; <b>K</b> (key) = what each token advertises; <b>V</b> (value) = the actual content carried. Step 1: \(QK^{\top}\) measures similarity between a query and all keys. Step 2: softmax turns scores into a probability weighting. Step 3: take the weighted sum of values — a context-aware representation of that position.</p>
+          <h5>(b) The √d_k scaling</h5>
+          <p>For large key dimension \(d_k\), the dot products grow large in magnitude, pushing softmax into a <b>very peaked</b> region where gradients are tiny (saturated). Dividing by \(\sqrt{d_k}\) keeps the scores in a sensible range, so the softmax stays smooth and gradients remain stable during training.</p>
+          <h5>(c) Loss + regime</h5>
+          <div class="eq">\[ \mathcal{L}=-\sum_{t=1}^{n}\log P(x_t\mid x_1,\dots,x_{t-1}) \]</div>
+          <p>During training we feed the <b>true</b> sequence (teacher forcing) and predict every next token. A <b>causal mask</b> zeroes attention to future positions so position \(t\) only ever sees \(x_{<t}\), keeping the objective honestly autoregressive. Because there's <b>no recurrence</b>, all positions are computed <b>in parallel</b> in one forward/backward pass — unlike the RNN's strictly sequential BPTT — which is why Transformers scale to massive datasets.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 7: DIFFUSION ============ -->
+  <section class="topic" data-t="6">
+    <div class="t-head">
+      <div class="t-tag">Topic 7 · Modules 9–10</div>
+      <h2 class="t-title">Diffusion Models: DDPM, DDIM &amp; Latent Diffusion</h2>
+      <p class="t-idea">Slowly destroy an image with noise (fixed, no parameters), then <span class="hl">learn to reverse it</span>. The ELBO simplifies to a beautifully simple target: <span class="hl">predict the noise</span> with an MSE loss.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative</div>
+        <div class="card-h">Forward corrupt · reverse denoise</div>
+        <div class="eq">\[ x_t=\sqrt{\bar\alpha_t}\,x_0+\sqrt{1-\bar\alpha_t}\,\epsilon,\quad \epsilon\sim\mathcal N(0,I) \]</div>
+        <ul class="decode">
+          <li><b>Forward</b>: fixed Markov chain, jump to any \(t\) in closed form.</li>
+          <li><b>Reverse</b>: a U-Net \(\epsilon_\theta(x_t,t)\) predicts the added noise.</li>
+          <li>Sample by denoising from \(x_T\!\sim\!\mathcal N(0,I)\) down to \(x_0\).</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">ELBO → simplified noise MSE</div>
+        <div class="eq">\[ \mathcal{L}_{\text{simple}}=\mathbb{E}_{x_0,t,\epsilon}\big\|\,\epsilon-\epsilon_\theta(x_t,t)\,\big\|^2 \]</div>
+        <ul class="decode">
+          <li>Full ELBO \(=L_T+\sum L_{t-1}+L_0\) (KL between reverse &amp; posterior).</li>
+          <li>Ho et al.: replacing \(L_{t-1}\) by plain <b>noise MSE</b> works better.</li>
+          <li><b>LDM</b>: <i>same loss</i> on latents \(z\) → 48× smaller tensors.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">Sample, noise, predict, MSE</div>
+        <ol class="steps">
+          <li>Sample clean \(x_0\), timestep \(t\sim U\{1..T\}\), noise \(\epsilon\)</li>
+          <li>Build \(x_t\) with the <b>closed-form</b> one-shot formula</li>
+          <li>Feed \((x_t,t)\) to the U-Net → predict \(\epsilon\)</li>
+          <li>Minimize MSE — <b>simple and stable</b> (no adversary, no minimax)</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · forward noising &amp; learned reverse</div>
+      <svg viewBox="0 0 720 220" role="img" aria-label="Diffusion forward and reverse">
+        <!-- top: forward -->
+        <rect class="svg-box" x="30"  y="30" width="70" height="46" rx="8"/>
+        <text class="svg-lab" x="65"  y="58" text-anchor="middle">x₀</text>
+        <rect class="svg-box" x="190" y="30" width="70" height="46" rx="8"/>
+        <text class="svg-lab" x="225" y="58" text-anchor="middle">xₜ₋₁</text>
+        <rect class="svg-box" x="350" y="30" width="70" height="46" rx="8"/>
+        <text class="svg-lab" x="385" y="58" text-anchor="middle">xₜ</text>
+        <rect class="svg-box" x="610" y="30" width="80" height="46" rx="8"/>
+        <text class="svg-lab" x="650" y="55" text-anchor="middle">x_T</text>
+        <text class="svg-sub" x="650" y="69" text-anchor="middle">≈ N(0,I)</text>
+
+        <path class="svg-ar" d="M100 53 H190" marker-end="url(#da)"/>
+        <path class="svg-ar" d="M260 53 H350" marker-end="url(#da)"/>
+        <path class="svg-ar" d="M420 53 H468" marker-end="url(#da)" stroke-dasharray="4 4"/>
+        <text class="svg-sub" x="490" y="50" text-anchor="middle">. . .</text>
+        <path class="svg-ar" d="M512 53 H610" marker-end="url(#da)" stroke-dasharray="4 4"/>
+        <text class="svg-sub" x="360" y="20" text-anchor="middle">forward: add noise (fixed schedule, no parameters)</text>
+
+        <!-- middle: unet predicts epsilon -->
+        <rect class="svg-box-l" x="290" y="110" width="140" height="48" rx="9"/>
+        <text class="svg-lab" x="360" y="131" text-anchor="middle">U-Net ε_θ(xₜ, t)</text>
+        <text class="svg-sub" x="360" y="148" text-anchor="middle">predicts the noise</text>
+        <path class="svg-ar" d="M385 76 V110" marker-end="url(#da)"/>
+        <path class="svg-ar-l" d="M430 134 C520 134 540 95 540 78" marker-end="url(#dl)"/>
+        <rect class="svg-box-l" x="500" y="110" width="160" height="48" rx="9"/>
+        <text class="svg-lab" x="580" y="131" text-anchor="middle">MSE</text>
+        <text class="svg-sub" x="580" y="148" text-anchor="middle">‖ε − ε_θ‖²</text>
+        <path class="svg-ar-l" d="M430 140 H500" marker-end="url(#dl)"/>
+
+        <!-- bottom: reverse -->
+        <path class="svg-ar-t" d="M610 175 H100" marker-end="url(#dt)"/>
+        <text class="svg-sub" x="360" y="200" text-anchor="middle" fill="#ff8166">reverse (sampling): iteratively subtract predicted noise  x_T → x₀</text>
+
+        <defs>
+          <marker id="da" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="dl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
+          <marker id="dt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">Training only needs the closed-form \(x_t\) and the MSE on \(\epsilon\). Sampling runs the reverse chain. <b>DDIM</b> skips steps (training loss needs no Markov property); <b>LDM</b> runs all of this in a compressed latent space.</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">noise schedule → MSE → param update</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose every piece</div>
+          <h4>Forward · loss · reverse</h4>
+          <div class="eq">\[ x_t=\sqrt{\bar\alpha_t}\,x_0+\sqrt{1-\bar\alpha_t}\,\epsilon,\quad \epsilon\sim\mathcal N(0,I) \]</div>
+          <div class="eq">\[ \mathcal{L}_{\text{simple}}=\mathbb{E}_{x_0,t,\epsilon}\big\|\,\epsilon-\epsilon_\theta(x_t,t)\,\big\|^2 \]</div>
+          <ul class="term-list">
+            <li><span class="sym">β_t</span>fixed variance schedule (e.g. 1e-4 → 0.02 over T = 1000).</li>
+            <li><span class="sym">α_t = 1−β_t</span>, <span class="sym">ᾱ_t = ∏α_s</span>cumulative product; decays 1 → 0 as t grows.</li>
+            <li><span class="sym">√ᾱ_t</span><b>signal weight</b> (image fades out).</li>
+            <li><span class="sym">√(1−ᾱ_t)</span><b>noise weight</b> (noise grows in).</li>
+            <li><span class="sym">ε</span>ground-truth noise we sampled; <span class="sym">ε_θ</span>U-Net's guess (the only learnable part).</li>
+            <li><span class="sym">t</span>random timestep ∼ U{1..T}; fed to net via <b>sinusoidal embedding</b>.</li>
+            <li><b>Why MSE works</b>: ELBO term L_{t−1} = KL of two Gaussians → reduces to MSE of noises (constants dropped per Ho 2020).</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>Single net, single MSE</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 140" role="img" aria-label="Diffusion gradient flow">
+              <rect class="svg-box" x="6" y="56" width="54" height="36" rx="6"/>
+              <text class="svg-lab" x="33" y="78" text-anchor="middle">x_0</text>
+              <rect class="svg-box-t" x="6" y="8" width="54" height="32" rx="6"/>
+              <text class="svg-lab" x="33" y="28" text-anchor="middle">ε</text>
+              <rect class="svg-box-g" x="80" y="56" width="84" height="36" rx="6"/>
+              <text class="svg-lab" x="122" y="76" text-anchor="middle">x_t closed</text>
+              <text class="svg-sub" x="122" y="88" text-anchor="middle">√ᾱ·x_0+√(1−ᾱ)·ε</text>
+              <rect class="svg-box-l" x="184" y="56" width="84" height="36" rx="6"/>
+              <text class="svg-lab" x="226" y="76" text-anchor="middle">U-Net ε_θ</text>
+              <text class="svg-sub" x="226" y="88" text-anchor="middle">predict noise</text>
+              <rect class="svg-box-t" x="288" y="56" width="68" height="36" rx="6"/>
+              <text class="svg-lab" x="322" y="76" text-anchor="middle">‖·‖²</text>
+              <text class="svg-sub" x="322" y="88" text-anchor="middle">MSE</text>
+              <path class="svg-ar-t" d="M33 40 V56" marker-end="url(#da7)"/>
+              <path class="svg-ar" d="M60 73 H80" marker-end="url(#da7)"/>
+              <path class="svg-ar-g" d="M164 73 H184" marker-end="url(#dg7)"/>
+              <path class="svg-ar-l" d="M268 73 H288" marker-end="url(#dl7)"/>
+              <path class="svg-ar-t" d="M322 92 C322 124 226 124 226 92" marker-end="url(#dt7)"/>
+              <text class="svg-sub" x="200" y="135" text-anchor="middle" fill="#ff8166">∂ℒ/∂θ = 2(ε_θ − ε) · ∂ε_θ/∂θ  — that's the whole loss</text>
+              <defs>
+                <marker id="da7" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="dg7" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="dl7" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="dt7" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">①</span>∂ℒ/∂ε_θ = 2(ε_θ − ε) <span class="note">residual is the gradient signal</span></div>
+          <div class="derivline"><span class="lbl">②</span>∂ℒ/∂θ = 2(ε_θ − ε) · ∂ε_θ/∂θ <span class="note">autograd through U-Net</span></div>
+          <div class="derivline"><span class="lbl">③</span>No grad through forward path: x_0 and ε are <b>data</b>, not params <span class="note">→ stable training</span></div>
+          <div class="derivline"><span class="lbl">sample</span>x_{t−1} = (1/√α_t)·(x_t − ((1−α_t)/√(1−ᾱ_t))·ε_θ) + σ_t·z</div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · 2-pixel image, t = 50</div>
+          <h4>From x_0 to one scalar MSE</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">x_0</span><span class="val">[0.70, 0.30]   (clean toy image)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">t, ᾱ_t</span><span class="val">t = 50,  ᾱ_50 = 0.60   (from cosine schedule)</span><span class="sh">scalars</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">ε</span><span class="val">ε = [−0.40, 0.20]   ∼ N(0, I)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">√ᾱ_t · x_0</span><span class="val">0.775 · [0.70, 0.30] = [0.542, 0.232]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">√(1−ᾱ_t) · ε</span><span class="val">0.632 · [−0.40, 0.20] = [−0.253, 0.126]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">x_t</span><span class="val">sum = [<b>0.290, 0.359</b>]   (noisy input to U-Net)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">ε_θ(x_t, t)</span><span class="val">U-Net predicts [−0.35, 0.15]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">residual</span><span class="val">ε_θ − ε = [−0.35 − (−0.40), 0.15 − 0.20] = [+0.05, −0.05]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">ℒ</span><span class="val">0.05² + 0.05² = <b>0.0050</b></span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">∂ℒ/∂ε_θ</span><span class="val">2 · [+0.05, −0.05] = [+0.10, −0.10]</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑪</span><span class="op">∂ℒ/∂θ</span><span class="val">backprop [+0.10, −0.10] through U-Net  →  weights tweaked to drive residual → 0</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">⑫</span><span class="op">LDM note</span><span class="val">same recipe on z = encode(image): 64×64 vs 512×512 → <b>~48× smaller tensors</b></span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🌫️</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Break it with known noise, learn to guess that noise.”</p>
+        <p>Forward = <b>fixed, no parameters</b>. Reverse = <b>learn \(\epsilon_\theta\)</b>. Loss = <b>‖ε − ε_θ‖²</b>. The whole intimidating ELBO collapses to a one-line MSE — that's the punchline. <b>LDM = same recipe, latent space.</b></p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q7</span><h3>From the ELBO to the simple noise loss</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">DDPM defines a forward noising process and learns to reverse it.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write the closed-form forward equation for \(x_t\) and explain why "no learnable parameters" matters for training.</li>
+          <li><span class="lbl">(b)</span> Start from the variational lower bound and explain how it simplifies to \(\mathcal{L}_{\text{simple}}=\|\epsilon-\epsilon_\theta(x_t,t)\|^2\). What does the network actually learn to predict?</li>
+          <li><span class="lbl">(c)</span> Describe the four-step training regime, and state how DDIM and Latent Diffusion reuse this <i>same</i> loss.</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) Forward process</h5>
+          <div class="eq">\[ x_t=\sqrt{\bar\alpha_t}\,x_0+\sqrt{1-\bar\alpha_t}\,\epsilon,\qquad \epsilon\sim\mathcal N(0,I) \]</div>
+          <p>The forward chain is <b>fixed by the noise schedule</b> \(\{\beta_t\}\) — it has <b>no learnable parameters</b>. This closed form lets us <b>jump directly to any timestep \(t\)</b> in one shot, so training never has to simulate the whole chain; we just sample a random \(t\) and corrupt \(x_0\) instantly.</p>
+          <h5>(b) ELBO → simple loss</h5>
+          <p>The variational bound decomposes as \(L=L_T+\sum_{t>1}L_{t-1}+L_0\): \(L_T\) is parameter-free (\(x_T\) should be \(\mathcal N(0,I)\)); \(L_{t-1}\) is a KL between the learned reverse step and the true posterior \(q(x_{t-1}\mid x_t,x_0)\) — the main signal; \(L_0\) is a final reconstruction term. Ho et al. showed that re-parameterizing the reverse mean and dropping the weighting reduces \(L_{t-1}\) to a plain <b>MSE between the true noise and predicted noise</b>, \(\|\epsilon-\epsilon_\theta(x_t,t)\|^2\). So the network simply <b>learns to predict the noise that was added</b>.</p>
+          <h5>(c) Training regime + DDIM/LDM</h5>
+          <p>(1) Sample clean \(x_0\), timestep \(t\sim U\{1..T\}\), noise \(\epsilon\). (2) Build \(x_t\) via the closed form. (3) Feed \((x_t,t)\) to the U-Net to predict \(\epsilon\). (4) Take a gradient step on the MSE. It's <b>stable</b> — no adversary, no minimax. <b>DDIM</b> uses the insight that the training loss doesn't require a Markovian process, so sampling can <b>skip timesteps</b> for speed (same trained model). <b>Latent Diffusion</b> runs the identical loss and procedure, but on a frozen autoencoder's compact latent \(z\) instead of pixels — same loss, ~48× smaller tensors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOPIC 8: FINE-TUNING ============ -->
+  <section class="topic" data-t="7">
+    <div class="t-head">
+      <div class="t-tag">Topic 8 · Module 8</div>
+      <h2 class="t-title">Fine-Tuning: LoRA &amp; Parameter-Efficient Adaptation</h2>
+      <p class="t-idea">Don't retrain a giant model — <span class="hl">freeze it</span> and learn a tiny low-rank update. LoRA writes the weight change as a product of two small matrices, so you train a fraction of the parameters.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">Generative / model</div>
+        <div class="card-h">Low-rank weight update</div>
+        <div class="eq">\[ W' = W + \Delta W = W + BA,\qquad r\ll\min(d,k) \]</div>
+        <ul class="decode">
+          <li>\(W\in\mathbb R^{d\times k}\) is <b>frozen</b>; only \(A,B\) train.</li>
+          <li>\(A\in\mathbb R^{r\times k},\;B\in\mathbb R^{d\times r}\) → trainable \(=r(d+k)\ll dk\).</li>
+          <li>Forward: \(h=Wx+BAx\) (adapter rides alongside).</li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">Loss</div>
+        <div class="card-h">Same task loss, fewer grads</div>
+        <div class="eq">\[ \mathcal{L}=-\sum_t \log P(x_t\mid x_{<t})\quad(\text{e.g. LM CE}) \]</div>
+        <ul class="decode">
+          <li>The <b>objective is unchanged</b> — it's still the task's loss.</li>
+          <li>Gradients computed <b>only for \(A,B\)</b>: \(\partial\mathcal L/\partial A,\ \partial\mathcal L/\partial B\).</li>
+          <li><b>QLoRA</b>: quantize frozen \(W\) to 4-bit; adapters stay higher precision.</li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">Training regime</div>
+        <div class="card-h">Freeze · inject · train adapters</div>
+        <ol class="steps">
+          <li><b>Freeze</b> all pretrained weights (no gradients on \(W\))</li>
+          <li><b>Inject</b> LoRA \(A,B\) into target layers (e.g. Q/V projections)</li>
+          <li>Forward on task data → compute loss → backprop to \(A,B\) only</li>
+          <li>Save the small adapter; optionally <b>merge</b> \(W{+}BA\) for zero-latency inference</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Step-by-step · the LoRA adapter path</div>
+      <svg viewBox="0 0 720 200" role="img" aria-label="LoRA adapter">
+        <rect class="svg-box" x="40" y="80" width="70" height="46" rx="8"/>
+        <text class="svg-lab" x="75" y="107" text-anchor="middle">x</text>
+
+        <!-- frozen W -->
+        <rect class="svg-box" x="200" y="30" width="150" height="50" rx="9"/>
+        <text class="svg-lab" x="275" y="52" text-anchor="middle">W (frozen) 🔒</text>
+        <text class="svg-sub" x="275" y="68" text-anchor="middle">d × k · no gradients</text>
+
+        <!-- A then B -->
+        <rect class="svg-box-t" x="200" y="120" width="65" height="46" rx="9"/>
+        <text class="svg-lab" x="232" y="142" text-anchor="middle">A</text>
+        <text class="svg-sub" x="232" y="157" text-anchor="middle">r × k</text>
+        <rect class="svg-box-t" x="290" y="120" width="65" height="46" rx="9"/>
+        <text class="svg-lab" x="322" y="142" text-anchor="middle">B</text>
+        <text class="svg-sub" x="322" y="157" text-anchor="middle">d × r</text>
+
+        <rect class="svg-box-g" x="470" y="78" width="120" height="50" rx="9"/>
+        <text class="svg-lab" x="530" y="100" text-anchor="middle">h</text>
+        <text class="svg-sub" x="530" y="116" text-anchor="middle">Wx + BAx</text>
+
+        <path class="svg-ar" d="M110 100 C150 95 165 65 200 55" marker-end="url(#la)"/>
+        <path class="svg-ar-t" d="M110 105 C150 120 175 138 200 142" marker-end="url(#lt)"/>
+        <path class="svg-ar-t" d="M265 143 H290" marker-end="url(#lt)"/>
+        <path class="svg-ar" d="M350 55 C420 60 440 72 470 86" marker-end="url(#la)"/>
+        <path class="svg-ar-t" d="M355 143 C420 138 445 115 470 110" marker-end="url(#lt)"/>
+        <text class="svg-sub" x="270" y="190" text-anchor="middle" fill="#ff8166">only A and B receive gradients — tiny, shareable adapter</text>
+
+        <defs>
+          <marker id="la" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="lt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">The frozen \(W\) keeps the pretrained knowledge; the small \(BA\) path (coral) learns the task-specific shift. Train \(r(d{+}k)\) params instead of \(dk\).</div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Math lens<span class="sub">where gradients go in a frozen model</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Decompose the LoRA layer</div>
+          <h4>One sum, two trainable matrices</h4>
+          <div class="eq">\[ h = Wx + \underbrace{BAx}_{\Delta h},\qquad A\in\mathbb{R}^{r\times k},\ B\in\mathbb{R}^{d\times r},\ r\ll\min(d,k) \]</div>
+          <ul class="term-list">
+            <li><span class="sym">W</span>pretrained weight, shape <b>(d, k)</b>, <b>frozen</b> (no gradients applied).</li>
+            <li><span class="sym">A</span>small (r, k), init ∼ N(0, small).</li>
+            <li><span class="sym">B</span>small (d, r), init = <b>0</b> → adapter starts as a no-op → training begins from pretrained behavior.</li>
+            <li><span class="sym">r</span>rank (typ. 4, 8, 16, 64). Trainable count = <b>r(d + k) ≪ dk</b>.</li>
+            <li><span class="sym">α/r</span>common scaling factor (LoRA paper); folds learning rate.</li>
+            <li><b>Loss unchanged</b> — same task loss as full fine-tuning (e.g. LM cross-entropy). Only <b>what receives grads</b> changes.</li>
+            <li><b>QLoRA</b>: W quantized to 4-bit; A, B stay BF16. ~2× memory savings, same gradients.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Gradient flow</div>
+          <h4>Grads stop at W · flow through B then A</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 160" role="img" aria-label="LoRA gradient routing">
+              <rect class="svg-box" x="6" y="64" width="44" height="36" rx="6"/>
+              <text class="svg-lab" x="28" y="86" text-anchor="middle">x</text>
+              <rect class="svg-box" x="70" y="20" width="104" height="36" rx="6"/>
+              <text class="svg-lab" x="122" y="42" text-anchor="middle">W 🔒 frozen</text>
+              <rect class="svg-box-t" x="70" y="108" width="46" height="36" rx="6"/>
+              <text class="svg-lab" x="93" y="130" text-anchor="middle">A</text>
+              <rect class="svg-box-t" x="132" y="108" width="46" height="36" rx="6"/>
+              <text class="svg-lab" x="155" y="130" text-anchor="middle">B</text>
+              <rect class="svg-box-g" x="200" y="64" width="60" height="36" rx="6"/>
+              <text class="svg-lab" x="230" y="86" text-anchor="middle">h</text>
+              <rect class="svg-box-l" x="280" y="64" width="76" height="36" rx="6"/>
+              <text class="svg-lab" x="318" y="86" text-anchor="middle">ℒ task</text>
+              <path class="svg-ar" d="M50 78 C58 66 64 46 70 42" marker-end="url(#la8)"/>
+              <path class="svg-ar-t" d="M50 86 C58 100 70 122 70 124" marker-end="url(#lt8)"/>
+              <path class="svg-ar-t" d="M116 126 H132" marker-end="url(#lt8)"/>
+              <path class="svg-ar" d="M174 42 C188 54 195 64 200 75" marker-end="url(#la8)"/>
+              <path class="svg-ar-t" d="M178 126 C190 118 198 100 200 92" marker-end="url(#lt8)"/>
+              <path class="svg-ar-l" d="M260 82 H280" marker-end="url(#ll8)"/>
+              <path class="svg-ar-t" d="M318 100 C260 150 95 150 93 144" marker-end="url(#lt8)"/>
+              <text class="svg-sub" x="180" y="156" text-anchor="middle" fill="#ff8166">∂ℒ/∂W = computed but DISCARDED;  ∂ℒ/∂B, ∂ℒ/∂A applied</text>
+              <defs>
+                <marker id="la8" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="ll8" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="lt8" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">①</span>∂ℒ/∂B = (∂ℒ/∂h) · (Ax)ᵀ <span class="note">outer product, shape (d, r)</span></div>
+          <div class="derivline"><span class="lbl">②</span>∂ℒ/∂A = Bᵀ · (∂ℒ/∂h) · xᵀ <span class="note">chain through B, shape (r, k)</span></div>
+          <div class="derivline"><span class="lbl">③</span>∂ℒ/∂W = (∂ℒ/∂h) · xᵀ  <b>but W.requires_grad = False</b> → never applied</div>
+          <div class="derivline"><span class="lbl">merge</span>At deploy: W' = W + α·BA → <b>single matrix, zero inference overhead</b></div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · d = 4, k = 4, r = 2</div>
+          <h4>96% fewer trainable params</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">shapes</span><span class="val">W: (4,4) — 16 params <b>frozen</b>.   A: (2,4) — 8.   B: (4,2) — 8.   Trainable = <b>16</b> (vs 16 full FT)</span><span class="sh">params</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">at scale</span><span class="val">d = k = 4096, r = 8:   full FT = 16.8M params;   LoRA = r(d+k) = <b>65.5K (0.4%)</b></span><span class="sh">params</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">x</span><span class="val">[1.0, 0.0, 1.0, 0.0]</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">Ax</span><span class="val">A · x = [0.30, −0.10]   (compressed to rank-r space)</span><span class="sh">(2,)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">B(Ax)</span><span class="val">B · [0.30, −0.10] = [0.05, 0.02, −0.03, 0.04]   (expanded back to d-space)</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">Wx</span><span class="val">[1.20, 0.40, 0.70, −0.10]   (frozen backbone)</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">h = Wx + BAx</span><span class="val">[<b>1.25, 0.42, 0.67, −0.06</b>]</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">∂ℒ/∂h</span><span class="val">say [−0.10, 0.20, 0.00, 0.10] from downstream layers</span><span class="sh">(4,)</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">∂ℒ/∂B</span><span class="val">(∂ℒ/∂h) ⊗ (Ax) → applied: B ← B − η·grad</span><span class="sh">(4,2)</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">∂ℒ/∂A</span><span class="val">Bᵀ · (∂ℒ/∂h) ⊗ x → applied: A ← A − η·grad</span><span class="sh">(2,4)</span></div>
+            <div class="tflow-row"><span class="ix">⑪</span><span class="op">∂ℒ/∂W</span><span class="val"><b>computed in graph but discarded</b> — optimizer never sees W</span><span class="sh">(4,4)</span></div>
+            <div class="tflow-row"><span class="ix">⑫</span><span class="op">save</span><span class="val">checkpoint = A + B only → tens of MB instead of GBs</span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🔌</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">“Freeze the giant, learn a sticky note.”</p>
+        <p>\(W'=W+BA\). The <b>loss never changes</b> — only <i>which</i> parameters get gradients. Big savings: \(r(d{+}k)\ll dk\). <b>QLoRA</b> = LoRA + a 4-bit-quantized frozen backbone, so even bigger models fit on small hardware.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q8</span><h3>Why LoRA trains so few parameters</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">LoRA adapts a large pretrained model without updating its weights.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> Write the LoRA reparameterization of a layer and explain the shapes of \(A\) and \(B\). Why is the parameter count \(r(d+k)\) instead of \(dk\)?</li>
+          <li><span class="lbl">(b)</span> The training loss is unchanged from full fine-tuning — so what exactly is different about the training regime? Trace what receives gradients.</li>
+          <li><span class="lbl">(c)</span> Explain QLoRA and why we can merge \(W+BA\) after training. Contrast with prompt engineering.</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) The reparameterization</h5>
+          <div class="eq">\[ W'=W+\Delta W=W+BA,\quad A\in\mathbb R^{r\times k},\ B\in\mathbb R^{d\times r},\ r\ll\min(d,k) \]</div>
+          <p>Instead of learning a full \(d\times k\) update (\(dk\) params), LoRA assumes the update is <b>low-rank</b> and factors it into two thin matrices. Trainable count is \(r\!\cdot\!k + d\!\cdot\!r = r(d+k)\), which is far smaller than \(dk\) when \(r\) is small (e.g. 8). The forward pass becomes \(h=Wx+BAx\).</p>
+          <h5>(b) Same loss, different regime</h5>
+          <p>The objective is still the task loss (e.g. language-model cross-entropy). What changes: the pretrained \(W\) is <b>frozen</b> (no gradients), and only \(A,B\) are trainable. Backprop computes \(\partial\mathcal L/\partial A\) and \(\partial\mathcal L/\partial B\) only; \(W\) stays static. So we get the full task gradient signal but update a tiny adapter — far less memory and compute.</p>
+          <h5>(c) QLoRA, merging, vs prompting</h5>
+          <p><b>QLoRA</b> additionally <b>quantizes the frozen backbone to ~4-bit</b> (the trainable adapters stay in higher precision), letting much larger models fit on small hardware. Because \(W'=W+BA\) is just a sum, after training we can <b>merge</b> the adapter into the weights to get a single matrix with <b>no extra inference latency</b>. Versus <b>prompt engineering</b> — which is cheap, training-free, and good for formatting/instructions but doesn't change the model's parameters — LoRA <b>changes behavior more deeply</b> and is better for repeated, specialized tasks (at the cost of needing data + training).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pager">
+    <div class="pg prev" id="pgPrev"><small>← Previous</small><span id="pgPrevT"></span></div>
+    <div class="pg next" id="pgNext"><small>Next →</small><span id="pgNextT"></span></div>
+  </div>
+
+  <footer>
+    <p>Built from your course modules 1–10 · King Mongkut's University of Technology Thonburi</p>
+    <p class="mono" style="margin-top:8px">G = what it produces · L = what it minimizes · T = how the loss drives training</p>
+  </footer>
+</main>
+
+<script>
+const TOPICS = [
+  "Foundations","GANs","Advanced GANs","VAEs","Sequence Models","Transformers","Diffusion","Fine-Tuning"
+];
+const NUMS = ["01","02","03","04","05","06","07","08"];
+let current = 0;
+const seen = new Set();
+
+// build tabs
+const tabrow = document.getElementById('tabrow');
+TOPICS.forEach((t,i)=>{
+  const b=document.createElement('button');
+  b.className='tab'+(i===0?' active':'');
+  b.innerHTML=`<span class="num">${NUMS[i]}</span>${t}`;
+  b.addEventListener('click',()=>go(i));
+  tabrow.appendChild(b);
+});
+const tabs=[...document.querySelectorAll('.tab')];
+const panels=[...document.querySelectorAll('.topic')];
+
+function go(i){
+  current=i;
+  tabs.forEach((t,j)=>t.classList.toggle('active',j===i));
+  panels.forEach((p,j)=>p.classList.toggle('active',j===i));
+  seen.add(i); markSeen();
+  updatePager();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function markSeen(){
+  tabs.forEach((t,j)=>t.classList.toggle('done',seen.has(j)));
+  document.querySelector('#prog b').textContent=seen.size;
+}
+function updatePager(){
+  const prev=document.getElementById('pgPrev'), next=document.getElementById('pgNext');
+  if(current===0){prev.classList.add('dis')}else{prev.classList.remove('dis');document.getElementById('pgPrevT').textContent=TOPICS[current-1];}
+  if(current===TOPICS.length-1){next.classList.add('dis')}else{next.classList.remove('dis');document.getElementById('pgNextT').textContent=TOPICS[current+1];}
+}
+document.getElementById('pgPrev').addEventListener('click',()=>{if(current>0)go(current-1)});
+document.getElementById('pgNext').addEventListener('click',()=>{if(current<TOPICS.length-1)go(current+1)});
+
+// reveal answers
+function bindReveals(){
+  document.querySelectorAll('[data-rev]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const ans=btn.parentElement.querySelector('.answer');
+      const open=ans.classList.toggle('show');
+      btn.textContent=open?'Hide model answer':'Reveal model answer';
+    });
+  });
+}
+
+// study mode: collapse all answers
+const studyToggle=document.getElementById('studyToggle');
+let study=false;
+studyToggle.addEventListener('click',()=>{
+  study=!study;
+  studyToggle.classList.toggle('on',study);
+  document.querySelectorAll('.answer').forEach(a=>a.classList.remove('show'));
+  document.querySelectorAll('[data-rev]').forEach(b=>b.textContent='Reveal model answer');
+});
+
+// init seen + pager
+seen.add(0); markSeen(); updatePager(); bindReveals();
+
+// render KaTeX after fonts/scripts load
+window.addEventListener('load',()=>{
+  if(window.renderMathInElement){
+    renderMathInElement(document.body,{
+      delimiters:[
+        {left:'$$',right:'$$',display:true},
+        {left:'\\[',right:'\\]',display:true},
+        {left:'\\(',right:'\\)',display:false}
+      ],
+      throwOnError:false
+    });
+  }
+});
+</script>
+</body>
+</html>
