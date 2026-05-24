@@ -687,8 +687,8 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
   <section class="topic" data-t="2">
     <div class="t-head">
       <div class="t-tag">Topic 3 · Module 4</div>
-      <h2 class="t-title">Advanced GANs: Conditioning &amp; Cycle Consistency</h2>
-      <p class="t-idea">Same adversarial backbone, two new ideas. <span class="hl">Conditional GANs</span> add a label \(y\) to both players. <span class="hl">CycleGAN</span> translates between unpaired domains using a <i>cycle-consistency</i> loss instead of paired data.</p>
+      <h2 class="t-title">Advanced GANs: Conditioning, Cycle, Style &amp; Tabular</h2>
+      <p class="t-idea">Same adversarial backbone, four extensions. <span class="hl">cGAN</span> conditions on a label \(y\) for controllable output. <span class="hl">CycleGAN</span> translates unpaired domains via cycle-consistency. <span class="hl">StyleGAN</span> disentangles the latent (z→w) and injects style per layer via AdaIN. <span class="hl">CTGAN</span> adapts GANs to tabular data with mode-specific normalization and a conditional vector.</p>
     </div>
 
     <div class="triad">
@@ -767,7 +767,11 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
           <ul class="term-list">
             <li><span class="sym">G : A→B</span> & <span class="sym">F : B→A</span>two generators (horse→zebra and back).</li>
             <li><span class="sym">D_X, D_Y</span>one discriminator per domain — judges realism in A and B.</li>
-            <li><span class="sym">‖·‖₁</span><b>L1 norm</b> (sum of absolute pixel diffs) → sharper than L2 for images.</li>
+            <li><span class="sym">𝔼_a</span><b>expectation over domain A samples</b> a ∼ p_A. In practice = <b>average over a mini-batch</b> of A images: \(\mathbb{E}_a[\,f(a)\,]\approx\tfrac{1}{N}\sum_{i=1}^{N} f(a_i)\).</li>
+            <li><span class="sym">𝔼_b</span>same idea for domain B: average f(b) over a mini-batch of B images. CycleGAN trains <b>both directions simultaneously</b> so each step uses one a-batch and one b-batch.</li>
+            <li><span class="sym">‖v‖₁</span><b>L1 norm</b> = sum of absolute values: \(\|v\|_1=\sum_i |v_i|\). For two images, \(\|x-\hat x\|_1=\sum_{\text{pixel }i} |x_i-\hat x_i|\). Derivative is \(\mathrm{sign}(v)\) — <b>constant magnitude</b>, doesn't shrink near zero.</li>
+            <li><span class="sym">‖v‖₂</span><b>L2 norm</b> = Euclidean: \(\|v\|_2=\sqrt{\sum_i v_i^2}\); squared L2 = \(\sum_i v_i^2\) (MSE). Derivative is \(2v\) — <b>scales with error</b>, so small errors get tiny gradients.</li>
+            <li><b>Why L1 here</b>L1 penalizes <b>every pixel equally</b> regardless of how small the error is → preserves edges and high-frequency detail. L2 averages errors, so it tolerates many small deviations → outputs look <b>blurry/smoothed</b> (same reason VAE samples are blurry).</li>
             <li><span class="sym">λ</span>cycle weight, typically <b>10</b>. λ ↓ = arbitrary mapping; λ ↑ = output ≈ input.</li>
             <li><b>cGAN</b> simpler: swap <span class="sym">x</span> → <span class="sym">(x,y)</span> in vanilla GAN; both terms now condition on label y.</li>
             <li>No paired data needed — cycle alone ties input to output.</li>
@@ -824,34 +828,218 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
       </div>
     </div>
 
+    <div class="mathlens" style="margin-top:22px">
+      <div class="ml-h">StyleGAN<span class="sub">disentangled latent + layer-wise style control</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Generative recipe</div>
+          <h4>Mapping → style → AdaIN</h4>
+          <div class="eq">\[ z\sim\mathcal{N}(0,I)\xrightarrow{\text{MLP}_8} w\in\mathcal{W} \xrightarrow{A_i} (y_{s,i},\,y_{b,i}) \]</div>
+          <div class="eq">\[ \text{AdaIN}(x_i,y) = y_{s,i}\cdot\frac{x_i-\mu(x_i)}{\sigma(x_i)} + y_{b,i} \]</div>
+          <ul class="term-list">
+            <li><span class="sym">z → w</span>8-layer MLP <b>untangles</b> z into intermediate latent w. 𝒲 is not forced to a Gaussian → semantic factors align with linear directions.</li>
+            <li><span class="sym">A_i</span>per-layer affine: w → (scale y_s, bias y_b). Style injected at <b>every</b> resolution (4² up to 1024²).</li>
+            <li><span class="sym">AdaIN</span>normalize feature stats per channel, then re-scale/bias by style. Early layers → coarse (pose, shape); late layers → fine (color, texture).</li>
+            <li><span class="sym">B_i · noise</span>per-pixel Gaussian noise added at each layer → stochastic detail (hair strands, freckles).</li>
+            <li><b>Style mixing</b>two latents w₁,w₂ on disjoint layer ranges → coarse from one face, fine from another.</li>
+            <li><b>Loss unchanged</b> — non-saturating logistic GAN loss + <span class="sym">R1</span> reg on D: \((\gamma/2)\,\mathbb{E}_x[\|\nabla_x D(x)\|^2]\).</li>
+            <li><b>StyleGAN2</b> replaces AdaIN with <b>modulated/demodulated conv</b> → removes droplet artifacts; adds <b>path-length</b> regularization on G.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Architecture diagram</div>
+          <h4>Const start, style at every layer</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 200" role="img" aria-label="StyleGAN generator">
+              <rect class="svg-box" x="6" y="18" width="64" height="30" rx="6"/>
+              <text class="svg-lab" x="38" y="38" text-anchor="middle">z ∈ 𝒵</text>
+              <rect class="svg-box-l" x="6" y="62" width="64" height="38" rx="6"/>
+              <text class="svg-lab" x="38" y="80" text-anchor="middle">MLP × 8</text>
+              <text class="svg-sub" x="38" y="94" text-anchor="middle">mapping</text>
+              <rect class="svg-box-g" x="6" y="114" width="64" height="30" rx="6"/>
+              <text class="svg-lab" x="38" y="134" text-anchor="middle">w ∈ 𝒲</text>
+
+              <rect class="svg-box" x="120" y="18" width="84" height="28" rx="6"/>
+              <text class="svg-lab" x="162" y="37" text-anchor="middle">const 4×4</text>
+              <rect class="svg-box-g" x="120" y="56" width="84" height="28" rx="6"/>
+              <text class="svg-lab" x="162" y="75" text-anchor="middle">AdaIN + conv</text>
+              <rect class="svg-box-g" x="120" y="94" width="84" height="28" rx="6"/>
+              <text class="svg-lab" x="162" y="113" text-anchor="middle">AdaIN + conv</text>
+              <rect class="svg-box-g" x="120" y="132" width="84" height="28" rx="6"/>
+              <text class="svg-lab" x="162" y="151" text-anchor="middle">… up to 1024²</text>
+
+              <rect class="svg-box-t" x="222" y="56" width="46" height="28" rx="6"/>
+              <text class="svg-lab" x="245" y="75" text-anchor="middle">A_1</text>
+              <rect class="svg-box-t" x="222" y="94" width="46" height="28" rx="6"/>
+              <text class="svg-lab" x="245" y="113" text-anchor="middle">A_2</text>
+              <rect class="svg-box-t" x="222" y="132" width="46" height="28" rx="6"/>
+              <text class="svg-lab" x="245" y="151" text-anchor="middle">A_n</text>
+
+              <rect class="svg-box" x="286" y="56" width="68" height="28" rx="6"/>
+              <text class="svg-sub" x="320" y="75" text-anchor="middle">noise B_1</text>
+              <rect class="svg-box" x="286" y="94" width="68" height="28" rx="6"/>
+              <text class="svg-sub" x="320" y="113" text-anchor="middle">noise B_2</text>
+              <rect class="svg-box" x="286" y="132" width="68" height="28" rx="6"/>
+              <text class="svg-sub" x="320" y="151" text-anchor="middle">noise B_n</text>
+
+              <path class="svg-ar" d="M38 48 V62" marker-end="url(#sa)"/>
+              <path class="svg-ar-l" d="M38 100 V114" marker-end="url(#sl)"/>
+              <path class="svg-ar-g" d="M70 129 C95 80 110 72 222 70" marker-end="url(#sg)"/>
+              <path class="svg-ar-g" d="M70 129 C95 118 110 110 222 108" marker-end="url(#sg)"/>
+              <path class="svg-ar-g" d="M70 129 C95 142 110 146 222 146" marker-end="url(#sg)"/>
+              <path class="svg-ar-t" d="M222 70 H204" marker-end="url(#st)"/>
+              <path class="svg-ar-t" d="M222 108 H204" marker-end="url(#st)"/>
+              <path class="svg-ar-t" d="M222 146 H204" marker-end="url(#st)"/>
+              <path class="svg-ar" d="M286 70 H204" marker-end="url(#sa)" stroke-dasharray="3 3"/>
+              <path class="svg-ar" d="M286 108 H204" marker-end="url(#sa)" stroke-dasharray="3 3"/>
+              <path class="svg-ar" d="M286 146 H204" marker-end="url(#sa)" stroke-dasharray="3 3"/>
+
+              <text class="svg-sub" x="180" y="190" text-anchor="middle" fill="#ff8166">w split into per-layer styles via A_i · noise B_i adds stochastic detail</text>
+              <defs>
+                <marker id="sa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="sg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="sl" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="st" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">①</span>w = MLP_8(z) <span class="note">disentangle z, no fixed prior on w</span></div>
+          <div class="derivline"><span class="lbl">②</span>(y_s, y_b) = A_i(w) <span class="note">style for layer i</span></div>
+          <div class="derivline"><span class="lbl">③</span>x_i ← AdaIN(conv(x_{i−1}) + B_i·noise, A_i(w)) <span class="note">style + stochastic detail per layer</span></div>
+          <div class="derivline"><span class="lbl">loss</span>ℒ_D = softplus(−D(x)) + softplus(D(G(z))) + (γ/2)·‖∇_x D(x)‖² (R1 reg)</div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Why disentangle z into w · style at which resolution</div>
+          <h4>𝒵 forces a sphere; 𝒲 doesn't</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">𝒵 problem</span><span class="val">z ∼ N(0,I) must cover all training factors on a unit sphere → <b>features entangle</b> (smile dir also moves age)</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">𝒲 fix</span><span class="val">w = MLP_8(z) → 𝒲 unconstrained; can map rare combos non-linearly → <b>linear semantic directions</b> emerge</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">coarse 4²→8²</span><span class="val">AdaIN at low res → pose, face shape, hair length</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">mid 16²→32²</span><span class="val">facial features, eyes open/closed, smile, gaze direction</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">fine 64²→1024²</span><span class="val">color scheme, micro-texture, skin tone, lighting</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">style mix</span><span class="val">w₁ for layers 0–6, w₂ for 7–end → face A pose + face B texture (interpretable control)</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">truncation</span><span class="val">w′ = w̄ + ψ·(w − w̄)   ψ &lt; 1 → safer samples near mean (higher fidelity, less diverse)</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">StyleGAN2</span><span class="val">AdaIN → <b>modulated conv</b>: w′ = s · W; w″ = w′/√(Σw′²)  (demod) → no droplet artifacts</span><span class="sh">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mathlens" style="margin-top:22px">
+      <div class="ml-h">CTGAN<span class="sub">conditional tabular GAN — mixed columns, imbalanced classes</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">Tabular-specific recipe</div>
+          <h4>Mode-norm + cond vector + WGAN-GP</h4>
+          <div class="eq">\[ \text{continuous } c\;\to\;(\underbrace{\text{one-hot mode}_k}_{\text{which Gaussian}},\;\underbrace{\alpha_k=\tfrac{c-\eta_k}{4\sigma_k}}_{\text{scaled residual}}) \]</div>
+          <div class="eq">\[ \mathcal{L}_D = \mathbb{E}\!\big[D(\tilde r)\big] - \mathbb{E}\!\big[D(r)\big] + \lambda_{gp}\,\mathbb{E}\!\big[(\|\nabla_{\hat r}D(\hat r)\|_2-1)^2\big] \]</div>
+          <ul class="term-list">
+            <li><b>Problem</b>tabular = continuous columns are <b>multi-modal</b>, categorical columns are <b>imbalanced</b>. Vanilla GAN collapses on minority classes and can't model multi-modal continuous columns.</li>
+            <li><span class="sym">VGM</span>fit <b>Variational Gaussian Mixture</b> per continuous column. Each value c → (one-hot mode_k, scaled residual α_k ∈ [−1, 1]) so each mode learned separately.</li>
+            <li><span class="sym">cond</span><b>conditional vector</b> = one-hot of (discrete column j, value v). G must output a row whose column j matches v.</li>
+            <li><b>Training-by-sampling</b>pick discrete column uniformly, then value with <b>log-frequency</b> probability → rare categories seen as often as common ones (fixes imbalance).</li>
+            <li><span class="sym">ℒ_G</span>WGAN-GP generator loss <b>plus cross-entropy</b> on cond column — forces cond consistency.</li>
+            <li><span class="sym">PacGAN</span>D scores a <b>pack of k rows</b> at once → mitigates mode collapse without changing G.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Pipeline diagram</div>
+          <h4>z + cond → row → critic (pack k)</h4>
+          <div class="gradgraph">
+            <svg viewBox="0 0 360 200" role="img" aria-label="CTGAN pipeline">
+              <rect class="svg-box" x="6" y="20" width="80" height="32" rx="6"/>
+              <text class="svg-lab" x="46" y="40" text-anchor="middle">z noise</text>
+              <rect class="svg-box-t" x="6" y="64" width="80" height="40" rx="6"/>
+              <text class="svg-lab" x="46" y="82" text-anchor="middle">cond vec</text>
+              <text class="svg-sub" x="46" y="96" text-anchor="middle">col j = v</text>
+              <rect class="svg-box" x="6" y="116" width="80" height="40" rx="6"/>
+              <text class="svg-lab" x="46" y="134" text-anchor="middle">real row r</text>
+              <text class="svg-sub" x="46" y="148" text-anchor="middle">VGM-encoded</text>
+
+              <rect class="svg-box-g" x="116" y="38" width="100" height="50" rx="7"/>
+              <text class="svg-lab" x="166" y="60" text-anchor="middle">Generator G</text>
+              <text class="svg-sub" x="166" y="76" text-anchor="middle">→ fake row r̃</text>
+
+              <rect class="svg-box-l" x="240" y="38" width="110" height="50" rx="7"/>
+              <text class="svg-lab" x="295" y="60" text-anchor="middle">Critic D (pack k)</text>
+              <text class="svg-sub" x="295" y="76" text-anchor="middle">Wasserstein score</text>
+
+              <rect class="svg-box-t" x="240" y="118" width="110" height="40" rx="6"/>
+              <text class="svg-lab" x="295" y="138" text-anchor="middle">CE on cond col</text>
+              <text class="svg-sub" x="295" y="152" text-anchor="middle">cond consistency</text>
+
+              <path class="svg-ar" d="M86 36 C100 40 108 45 116 50" marker-end="url(#ctga)"/>
+              <path class="svg-ar-t" d="M86 84 H116" marker-end="url(#ctgt)"/>
+              <path class="svg-ar-g" d="M216 63 H240" marker-end="url(#ctgg)"/>
+              <path class="svg-ar" d="M86 136 C150 130 200 95 240 75" marker-end="url(#ctga)"/>
+              <path class="svg-ar-t" d="M166 88 V118 H240" marker-end="url(#ctgt)"/>
+
+              <text class="svg-sub" x="180" y="195" text-anchor="middle" fill="#ff8166">∇G ← Wasserstein + λ_ce·CE(cond)   ·   ∇D ← Wasserstein + λ_gp·GP</text>
+              <defs>
+                <marker id="ctga" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa2b1"/></marker>
+                <marker id="ctgg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
+                <marker id="ctgl" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4fd1c5"/></marker>
+                <marker id="ctgt" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="derivline"><span class="lbl">①</span>Encode row: continuous c_i → [one-hot mode_k, α_k];  categorical → one-hot</div>
+          <div class="derivline"><span class="lbl">②</span>Sample cond: pick discrete col j; pick value v with prob ∝ log(freq(v)) <span class="note">log-freq rebalances rare classes</span></div>
+          <div class="derivline"><span class="lbl">③</span>G(z, cond) → r̃; CE term penalizes r̃'s col j ≠ v <span class="note">cond consistency</span></div>
+          <div class="derivline"><span class="lbl">④</span>D scores a <b>pack of k rows</b> → Wasserstein loss + gradient penalty (λ_gp = 10)</div>
+        </div>
+        <div class="ml-block flow full">
+          <div class="ml-k">Numerical walk · row with 1 continuous + 1 categorical column</div>
+          <h4>Encode → sample cond → generate → score</h4>
+          <div class="tensor-flow">
+            <div class="tflow-row"><span class="ix">①</span><span class="op">raw row</span><span class="val">age = 32.0  (continuous, bimodal),   job = "engineer"  (5 classes, imbalanced)</span><span class="sh">—</span></div>
+            <div class="tflow-row"><span class="ix">②</span><span class="op">VGM(age)</span><span class="val">3 modes: η=[25,45,70], σ=[5,8,6]  → 32.0 in mode 0 → mode=[<b>1</b>,0,0], α=(32−25)/(4·5)=<b>0.35</b></span><span class="sh">(3,)+(1,)</span></div>
+            <div class="tflow-row"><span class="ix">③</span><span class="op">job one-hot</span><span class="val">[0, 0, <b>1</b>, 0, 0]</span><span class="sh">(5,)</span></div>
+            <div class="tflow-row"><span class="ix">④</span><span class="op">full row r</span><span class="val">concat = [<b>1</b>,0,0, 0.35, 0,0,<b>1</b>,0,0]</span><span class="sh">(9,)</span></div>
+            <div class="tflow-row"><span class="ix">⑤</span><span class="op">sample cond</span><span class="val">picked job col, value "doctor" (rare) → cond = [0,<b>1</b>,0,0,0]   (log-freq pulled rare class up)</span><span class="sh">(5,)</span></div>
+            <div class="tflow-row"><span class="ix">⑥</span><span class="op">G(z, cond)</span><span class="val">fake r̃ = [0.2, 0.7, 0.1,  0.40,  0, 0.85, 0.05, 0.05, 0.05]   (softmax on cat slots)</span><span class="sh">(9,)</span></div>
+            <div class="tflow-row"><span class="ix">⑦</span><span class="op">cond CE</span><span class="val">−log(r̃[job=doctor]) = −log(0.85) = <b>0.163</b>   (low → G obeyed cond)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑧</span><span class="op">D pack</span><span class="val">D sees pack of k = 10 rows (all real or all fake) → scalar score per pack → Wasserstein gap</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑨</span><span class="op">D loss</span><span class="val">D(r̃) − D(r) + 10·(‖∇_{r̂}D(r̂)‖₂ − 1)²    (GP at interpolated r̂ = ε·r + (1−ε)·r̃)</span><span class="sh">scalar</span></div>
+            <div class="tflow-row"><span class="ix">⑩</span><span class="op">G loss</span><span class="val">−𝔼[D(r̃)] + λ_ce · CE(cond)   →  G must <b>fool D AND obey cond</b></span><span class="sh">scalar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="hook">
       <div class="ic">🔁</div>
       <div>
         <h4>Memory hook</h4>
-        <p class="mnem">“Translate, then translate back — you should be home.”</p>
-        <p>cGAN = <b>vanilla GAN + a label glued to both terms</b>. CycleGAN = <b>2 GANs + 1 round-trip rule</b>. The cycle loss replaces missing paired data: realism comes from the discriminators, <b>meaning</b> comes from the cycle.</p>
+        <p class="mnem">“Label, loop, style, table — same fight, different gloves.”</p>
+        <p><b>cGAN</b> = vanilla GAN + label on both terms. <b>CycleGAN</b> = 2 GANs + round-trip. <b>StyleGAN</b> = z→w mapping + AdaIN per layer (coarse→fine control). <b>CTGAN</b> = VGM mode-norm + cond vector + WGAN-GP for tabular. All four share the adversarial backbone — only the conditioning, normalization, or loss term changes.</p>
       </div>
     </div>
 
     <div class="practice">
-      <div class="pq-head"><span class="badge">Explain · Q3</span><h3>From conditioning to cycle consistency</h3></div>
+      <div class="pq-head"><span class="badge">Explain · Q3</span><h3>cGAN, CycleGAN, StyleGAN, CTGAN</h3></div>
       <div class="pq-body">
-        <p class="pq-q"><span class="stem">Both cGAN and CycleGAN extend the basic adversarial loss.</span></p>
+        <p class="pq-q"><span class="stem">All four advanced GANs extend the basic adversarial loss — each changes one specific thing.</span></p>
         <ul class="subq">
           <li><span class="lbl">(a)</span> Write the conditional minimax objective and explain the single change from vanilla GAN.</li>
-          <li><span class="lbl">(b)</span> Write CycleGAN's full objective and explain what the cycle-consistency term enforces and why it is needed for <i>unpaired</i> data.</li>
-          <li><span class="lbl">(c)</span> Explain the role of \(\lambda\): what happens at the two extremes?</li>
+          <li><span class="lbl">(b)</span> Write CycleGAN's full objective. What does the cycle-consistency term enforce and why is it needed for <i>unpaired</i> data? Explain the role of \(\lambda\) at the two extremes.</li>
+          <li><span class="lbl">(c)</span> Explain StyleGAN's mapping network (\(z\!\to\!w\)) and AdaIN. Why is the disentangled \(\mathcal{W}\) better than \(\mathcal{Z}\) for editing, and what does AdaIN actually inject at each layer?</li>
+          <li><span class="lbl">(d)</span> Explain why CTGAN needs <i>mode-specific normalization</i>, a <i>conditional vector</i>, and <i>training-by-sampling</i> for tabular data. State CTGAN's losses (D and G).</li>
         </ul>
         <button class="reveal-btn" data-rev>Reveal model answer</button>
         <div class="answer">
           <h5>(a) Conditional GAN</h5>
           <div class="eq">\[ \min_G\max_D \mathbb{E}_{x,y}[\log D(x,y)] + \mathbb{E}_{z,y}[\log(1-D(G(z,y),y))] \]</div>
           <p>Structurally identical to vanilla GAN — the <b>only change is that both terms are conditioned on \(y\)</b>. The label is fed to G (so it generates a specific class) and to D (so it judges "is this a real <i>y</i>?"). This makes generation <b>controllable</b>.</p>
-          <h5>(b) CycleGAN objective</h5>
+          <h5>(b) CycleGAN objective &amp; λ</h5>
           <div class="eq">\[ \mathcal{L}=\mathcal{L}_{GAN}(G,D_Y)+\mathcal{L}_{GAN}(F,D_X)+\lambda\,\mathcal{L}_{cyc}(G,F) \]</div>
-          <p>Two GANs translate \(A\!\to\!B\) and \(B\!\to\!A\). The cycle term enforces \(F(G(a))\approx a\) and \(G(F(b))\approx b\) (an L1 reconstruction). With <b>no paired data</b>, the discriminators only guarantee the output <i>looks</i> like the target domain — they don't tie it to the specific input. The cycle constraint is what forces the translation to <b>preserve content</b>, ruling out arbitrary mappings.</p>
-          <h5>(c) The weight λ</h5>
-          <p>\(\lambda\) balances <b>style realism vs content preservation</b>. Too small → the cycle barely matters, mappings become arbitrary (you lose the original content). Too large → the network plays it safe and outputs something almost identical to the input (little translation happens).</p>
+          <p>Two GANs translate \(A\!\to\!B\) and \(B\!\to\!A\). The cycle term enforces \(F(G(a))\approx a\) and \(G(F(b))\approx b\) (an L1 reconstruction). With <b>no paired data</b>, the discriminators only guarantee the output <i>looks</i> like the target domain — they don't tie it to the specific input. The cycle constraint is what forces the translation to <b>preserve content</b>. \(\lambda\) balances <b>realism vs content preservation</b>: too small → arbitrary mappings (content lost); too large → output ≈ input (no translation).</p>
+          <h5>(c) StyleGAN: mapping + AdaIN</h5>
+          <div class="eq">\[ z\xrightarrow{\text{MLP}_8} w,\qquad \text{AdaIN}(x_i, y)=y_{s,i}\cdot\tfrac{x_i-\mu(x_i)}{\sigma(x_i)}+y_{b,i} \]</div>
+          <p>An 8-layer MLP transforms \(z\sim\mathcal{N}(0,I)\) into \(w\in\mathcal{W}\). Because \(z\) is constrained to a fixed prior, semantic factors entangle in \(\mathcal{Z}\) (a "smile" direction also moves age). \(\mathcal{W}\) is unconstrained, so the network learns a representation where factors align with <b>linear directions</b> — enabling semantic edits, style mixing, and interpolation. At each synthesis layer a per-layer affine \(A_i\) projects \(w\) to a scale/bias \((y_s, y_b)\); AdaIN normalizes the feature map's stats and re-scales/biases them by this style. <b>Early layers control coarse features</b> (pose, shape); <b>later layers control fine features</b> (color, texture). Per-layer noise \(B_i\) adds stochastic detail. The adversarial loss is unchanged — only G's architecture and an R1 regularizer on D change.</p>
+          <h5>(d) CTGAN for tabular data</h5>
+          <div class="eq">\[ \mathcal{L}_D=\mathbb{E}[D(\tilde r)]-\mathbb{E}[D(r)]+\lambda_{gp}\,\mathbb{E}\!\big[(\|\nabla_{\hat r}D(\hat r)\|_2-1)^2\big],\quad \mathcal{L}_G=-\mathbb{E}[D(\tilde r)]+\lambda_{ce}\,\text{CE}(\text{cond}) \]</div>
+          <p>Tabular data mixes <b>multi-modal continuous</b> columns and <b>imbalanced categorical</b> columns. Treating a multi-modal column as one Gaussian, or a rare class like a common one, makes a vanilla GAN collapse onto the dominant modes. CTGAN fixes this with three tricks: (1) <b>mode-specific normalization</b> — fit a Variational Gaussian Mixture per continuous column and represent each value as (one-hot mode index, scaled residual \(\alpha_k\)), so each mode is learned separately; (2) a <b>conditional vector</b> — a one-hot of (discrete column \(j\), value \(v\)) fed to G; a cross-entropy term on column \(j\) of the output penalizes mismatch, forcing G to honor the condition; (3) <b>training-by-sampling</b> — pick the conditioning value with <b>log-frequency</b> probability, so rare classes are seen as often as common ones. The training loss is Wasserstein with gradient penalty (WGAN-GP) plus the cond CE; D scores rows in <b>packs of k</b> (PacGAN) to discourage mode collapse.</p>
         </div>
       </div>
     </div>
@@ -1063,8 +1251,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
       <div class="card g">
         <div class="card-k">Generative</div>
         <div class="card-h">Hidden-state recurrence</div>
-        <div class="eq">\[ h_t=f(h_{t-1},x_t;\theta) \]</div>
-        <div class="eq">\[ p(x)=\prod_{t} p(x_t\mid x_{<t}) \]</div>
+        <div class="eq">\[ h_t=f(h_{t-1},x_t;\theta),\quad p(x)=\prod_{t} p(x_t\mid x_{\lt t}) \]</div>
         <ul class="decode">
           <li>State \(h_t\) is a <b>summary of all past inputs</b>.</li>
           <li>Autoregressive: predict the next token from history.</li>
@@ -1074,7 +1261,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
       <div class="card l">
         <div class="card-k">Loss</div>
         <div class="card-h">Cross-entropy per step</div>
-        <div class="eq">\[ \mathcal{L}=-\sum_{t}\log P(x_t\mid x_{<t}) \]</div>
+        <div class="eq">\[ \mathcal{L}=-\sum_{t}\log P(x_t\mid x_{\lt t}) \]</div>
         <ul class="decode">
           <li>Sum of next-token negative log-likelihoods.</li>
           <li>Penalizes each wrong prediction along the sequence.</li>
@@ -1095,49 +1282,75 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
 
     <div class="viz">
       <div class="viz-h">Step-by-step · unrolled recurrence + BPTT</div>
-      <svg viewBox="0 0 720 220" role="img" aria-label="RNN unrolled">
-        <!-- cells -->
-        <g>
-          <rect class="svg-box-g" x="60"  y="90" width="90" height="50" rx="9"/>
-          <text class="svg-lab" x="105" y="120" text-anchor="middle">h₁</text>
-          <rect class="svg-box-g" x="240" y="90" width="90" height="50" rx="9"/>
-          <text class="svg-lab" x="285" y="120" text-anchor="middle">h₂</text>
-          <rect class="svg-box-g" x="420" y="90" width="90" height="50" rx="9"/>
-          <text class="svg-lab" x="465" y="120" text-anchor="middle">h₃</text>
-          <rect class="svg-box-g" x="600" y="90" width="90" height="50" rx="9"/>
-          <text class="svg-lab" x="645" y="120" text-anchor="middle">h₄</text>
-        </g>
-        <!-- forward state arrows -->
-        <path class="svg-ar-g" d="M150 115 H240" marker-end="url(#ra)"/>
-        <path class="svg-ar-g" d="M330 115 H420" marker-end="url(#ra)"/>
-        <path class="svg-ar-g" d="M510 115 H600" marker-end="url(#ra)"/>
-        <!-- inputs -->
-        <text class="svg-sub" x="105" y="172" text-anchor="middle">x₁</text>
-        <text class="svg-sub" x="285" y="172" text-anchor="middle">x₂</text>
-        <text class="svg-sub" x="465" y="172" text-anchor="middle">x₃</text>
-        <text class="svg-sub" x="645" y="172" text-anchor="middle">x₄</text>
-        <path class="svg-ar" d="M105 165 V143" marker-end="url(#ra2)"/>
-        <path class="svg-ar" d="M285 165 V143" marker-end="url(#ra2)"/>
-        <path class="svg-ar" d="M465 165 V143" marker-end="url(#ra2)"/>
-        <path class="svg-ar" d="M645 165 V143" marker-end="url(#ra2)"/>
-        <!-- loss -->
-        <rect class="svg-box-l" x="300" y="20" width="120" height="40" rx="9"/>
-        <text class="svg-lab" x="360" y="45" text-anchor="middle">Loss (Σ CE)</text>
-        <path class="svg-ar" d="M105 90 C105 55 280 55 305 58" marker-end="url(#ra)"/>
-        <path class="svg-ar" d="M645 90 C645 55 420 55 415 58" marker-end="url(#ra)"/>
-        <!-- BPTT backward -->
-        <path class="svg-ar-t" d="M600 130 H510" marker-end="url(#rt)"/>
-        <path class="svg-ar-t" d="M420 130 H330" marker-end="url(#rt)"/>
-        <path class="svg-ar-t" d="M240 130 H150" marker-end="url(#rt)"/>
-        <text class="svg-sub" x="360" y="205" text-anchor="middle" fill="#ff8166">backward through time — gradients flow right → left</text>
+      <svg viewBox="0 0 760 310" role="img" aria-label="RNN unrolled">
+        <!-- output predictions (top) -->
+        <rect class="svg-box-l" x="40"  y="20" width="100" height="38" rx="8"/>
+        <text class="svg-lab" x="90"  y="44" text-anchor="middle">ŷ₁ · ℒ₁</text>
+        <rect class="svg-box-l" x="200" y="20" width="100" height="38" rx="8"/>
+        <text class="svg-lab" x="250" y="44" text-anchor="middle">ŷ₂ · ℒ₂</text>
+        <rect class="svg-box-l" x="360" y="20" width="100" height="38" rx="8"/>
+        <text class="svg-lab" x="410" y="44" text-anchor="middle">ŷ₃ · ℒ₃</text>
+        <rect class="svg-box-l" x="520" y="20" width="100" height="38" rx="8"/>
+        <text class="svg-lab" x="570" y="44" text-anchor="middle">ŷ₄ · ℒ₄</text>
+
+        <!-- total loss (top-right) -->
+        <rect class="svg-box-l" x="650" y="20" width="90" height="38" rx="8"/>
+        <text class="svg-lab" x="695" y="44" text-anchor="middle">Σ ℒ_t</text>
+
+        <!-- hidden state cells -->
+        <rect class="svg-box-g" x="40"  y="120" width="100" height="56" rx="10"/>
+        <text class="svg-lab" x="90"  y="153" text-anchor="middle">h₁</text>
+        <rect class="svg-box-g" x="200" y="120" width="100" height="56" rx="10"/>
+        <text class="svg-lab" x="250" y="153" text-anchor="middle">h₂</text>
+        <rect class="svg-box-g" x="360" y="120" width="100" height="56" rx="10"/>
+        <text class="svg-lab" x="410" y="153" text-anchor="middle">h₃</text>
+        <rect class="svg-box-g" x="520" y="120" width="100" height="56" rx="10"/>
+        <text class="svg-lab" x="570" y="153" text-anchor="middle">h₄</text>
+
+        <!-- forward state arrows (gold, between cells, mid-height) -->
+        <path class="svg-ar-g" d="M140 148 H200" marker-end="url(#ra)"/>
+        <path class="svg-ar-g" d="M300 148 H360" marker-end="url(#ra)"/>
+        <path class="svg-ar-g" d="M460 148 H520" marker-end="url(#ra)"/>
+
+        <!-- h_t → ŷ_t (upward) -->
+        <path class="svg-ar-l" d="M90  120 V58"  marker-end="url(#rl)"/>
+        <path class="svg-ar-l" d="M250 120 V58"  marker-end="url(#rl)"/>
+        <path class="svg-ar-l" d="M410 120 V58"  marker-end="url(#rl)"/>
+        <path class="svg-ar-l" d="M570 120 V58"  marker-end="url(#rl)"/>
+
+        <!-- per-step losses → Σ ℒ (top-right) -->
+        <path class="svg-ar" d="M140 38 H200" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M300 38 H360" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M460 38 H520" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M620 38 H650" marker-end="url(#ra2)"/>
+
+        <!-- inputs (bottom) -->
+        <rect class="svg-box" x="60"  y="218" width="60" height="34" rx="7"/>
+        <text class="svg-sub" x="90"  y="240" text-anchor="middle">x₁</text>
+        <rect class="svg-box" x="220" y="218" width="60" height="34" rx="7"/>
+        <text class="svg-sub" x="250" y="240" text-anchor="middle">x₂</text>
+        <rect class="svg-box" x="380" y="218" width="60" height="34" rx="7"/>
+        <text class="svg-sub" x="410" y="240" text-anchor="middle">x₃</text>
+        <rect class="svg-box" x="540" y="218" width="60" height="34" rx="7"/>
+        <text class="svg-sub" x="570" y="240" text-anchor="middle">x₄</text>
+
+        <path class="svg-ar" d="M90  218 V176" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M250 218 V176" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M410 218 V176" marker-end="url(#ra2)"/>
+        <path class="svg-ar" d="M570 218 V176" marker-end="url(#ra2)"/>
+
+        <!-- BPTT backward gradient lane (below inputs) -->
+        <path class="svg-ar-t" d="M620 282 H140" marker-end="url(#rt)"/>
+        <text class="svg-sub" x="380" y="302" text-anchor="middle" fill="#ff8166">BPTT · ∂ℒ/∂θ flows right → left through every timestep · long chains → vanishing/exploding</text>
 
         <defs>
           <marker id="ra"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e9b949"/></marker>
           <marker id="ra2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="rl"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
           <marker id="rt"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
         </defs>
       </svg>
-      <div class="viz-cap">The state chain (gold) is sequential — the <b>bottleneck</b>. Gradients (coral) must travel back through every step, which is why deep chains forget without LSTM gates.</div>
+      <div class="viz-cap">State chain (gold) carries memory left → right. Each \(h_t\) emits \(\hat y_t\) and contributes \(\mathcal{L}_t\) to the total loss. Backprop (coral) must travel back through every step — the sequential bottleneck.</div>
     </div>
 
     <div class="mathlens">
@@ -1147,7 +1360,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
           <div class="ml-k">Decompose the recurrence</div>
           <h4>One state, T copies, shared weights</h4>
           <div class="eq">\[ h_t=\tanh(W_h h_{t-1}+W_x x_t+b),\qquad \hat y_t=\mathrm{softmax}(W_o h_t) \]</div>
-          <div class="eq">\[ \mathcal{L}=-\sum_{t=1}^{T}\log P(x_t\mid x_{<t})=\sum_{t=1}^{T}\mathcal{L}_t \]</div>
+          <div class="eq">\[ \mathcal{L}=-\sum_{t=1}^{T}\log P(x_t\mid x_{\lt t})=\sum_{t=1}^{T}\mathcal{L}_t \]</div>
           <ul class="term-list">
             <li><span class="sym">h_t</span>hidden state — running summary of x_1…x_t.</li>
             <li><span class="sym">W_h, W_x, W_o, b</span><b>shared across all timesteps</b> (the same params reused T times).</li>
@@ -1160,23 +1373,27 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
           <div class="ml-k">Gradient flow</div>
           <h4>Why long chains vanish</h4>
           <div class="gradgraph">
-            <svg viewBox="0 0 360 140" role="img" aria-label="BPTT Jacobian product">
-              <rect class="svg-box-g" x="6" y="56" width="54" height="42" rx="6"/>
-              <text class="svg-lab" x="33" y="81" text-anchor="middle">h₁</text>
-              <rect class="svg-box-g" x="78" y="56" width="54" height="42" rx="6"/>
-              <text class="svg-lab" x="105" y="81" text-anchor="middle">h₂</text>
-              <rect class="svg-box-g" x="150" y="56" width="54" height="42" rx="6"/>
-              <text class="svg-lab" x="177" y="81" text-anchor="middle">h₃</text>
-              <rect class="svg-box-g" x="222" y="56" width="54" height="42" rx="6"/>
-              <text class="svg-lab" x="249" y="81" text-anchor="middle">h_T</text>
-              <rect class="svg-box-l" x="294" y="56" width="56" height="42" rx="6"/>
-              <text class="svg-lab" x="322" y="81" text-anchor="middle">ℒ</text>
-              <path class="svg-ar-g" d="M60 77 H78" marker-end="url(#ra5)"/>
-              <path class="svg-ar-g" d="M132 77 H150" marker-end="url(#ra5)"/>
-              <path class="svg-ar-g" d="M204 77 H222" marker-end="url(#ra5)"/>
-              <path class="svg-ar-g" d="M276 77 H294" marker-end="url(#ra5)"/>
-              <path class="svg-ar-t" d="M294 98 C260 118 100 118 60 98" marker-end="url(#rt5)"/>
-              <text class="svg-sub" x="180" y="135" text-anchor="middle" fill="#ff8166">∂ℒ/∂h₁ = ∂ℒ/∂h_T · ∏(∂h_t/∂h_{t−1}) → product of T Jacobians</text>
+            <svg viewBox="0 0 360 160" role="img" aria-label="BPTT Jacobian product">
+              <rect class="svg-box-g" x="8"   y="54" width="56" height="44" rx="7"/>
+              <text class="svg-lab" x="36"  y="80" text-anchor="middle">h₁</text>
+              <rect class="svg-box-g" x="80"  y="54" width="56" height="44" rx="7"/>
+              <text class="svg-lab" x="108" y="80" text-anchor="middle">h₂</text>
+              <text class="svg-sub" x="160" y="80" text-anchor="middle">···</text>
+              <rect class="svg-box-g" x="184" y="54" width="56" height="44" rx="7"/>
+              <text class="svg-lab" x="212" y="80" text-anchor="middle">h<tspan baseline-shift="sub" font-size="9">T−1</tspan></text>
+              <rect class="svg-box-g" x="256" y="54" width="56" height="44" rx="7"/>
+              <text class="svg-lab" x="284" y="80" text-anchor="middle">h<tspan baseline-shift="sub" font-size="9">T</tspan></text>
+              <rect class="svg-box-l" x="324" y="54" width="32" height="44" rx="7"/>
+              <text class="svg-lab" x="340" y="82" text-anchor="middle">ℒ</text>
+
+              <path class="svg-ar-g" d="M64  76 H80"  marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M136 76 H150" marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M170 76 H184" marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M240 76 H256" marker-end="url(#ra5)"/>
+              <path class="svg-ar-g" d="M312 76 H324" marker-end="url(#ra5)"/>
+
+              <path class="svg-ar-t" d="M324 100 C260 134 100 134 64 100" marker-end="url(#rt5)"/>
+              <text class="svg-sub" x="180" y="152" text-anchor="middle" fill="#ff8166">∂ℒ/∂h₁ = ∂ℒ/∂h_T · ∏_{t=2..T} (∂h_t/∂h_{t−1}) — product of T Jacobians</text>
               <defs>
                 <marker id="ra5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e9b949"/></marker>
                 <marker id="rt5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8166"/></marker>
@@ -1229,9 +1446,9 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
         <button class="reveal-btn" data-rev>Reveal model answer</button>
         <div class="answer">
           <h5>(a) Recurrence → factorized likelihood</h5>
-          <p>Each step updates a hidden state \(h_t=f(h_{t-1},x_t;\theta)\), where \(h_t\) summarizes all inputs seen so far. Conditioning each prediction on \(h_{t-1}\) lets the model write the joint as a product of conditionals \(p(x)=\prod_t p(x_t\mid x_{<t})\) — an <b>autoregressive</b> factorization.</p>
+          <p>Each step updates a hidden state \(h_t=f(h_{t-1},x_t;\theta)\), where \(h_t\) summarizes all inputs seen so far. Conditioning each prediction on \(h_{t-1}\) lets the model write the joint as a product of conditionals \(p(x)=\prod_t p(x_t\mid x_{\lt t})\) — an <b>autoregressive</b> factorization.</p>
           <h5>(b) Loss</h5>
-          <div class="eq">\[ \mathcal{L}=-\sum_t \log P(x_t\mid x_{<t}) \]</div>
+          <div class="eq">\[ \mathcal{L}=-\sum_t \log P(x_t\mid x_{\lt t}) \]</div>
           <p>This is the <b>summed next-token cross-entropy</b> — exactly the negative log-likelihood of the sequence. Minimizing it = maximizing the probability the model assigns to the true sequence, the same MLE principle as Topic 1, applied step by step.</p>
           <h5>(c) BPTT &amp; the bottleneck</h5>
           <p>We run the full sequence forward to accumulate the loss, then propagate gradients <b>backward through every timestep</b> (BPTT). Because \(h_t\) depends on \(h_{t-1}\), computation is strictly <b>sequential</b> — you can't skip or parallelize across time. Over long chains, repeated multiplication of Jacobians causes <b>vanishing or exploding gradients</b>, so early steps get little learning signal. <b>LSTM gates</b> (with an additive cell state) let information and gradients pass through largely unchanged, preserving long-term dependencies.</p>
@@ -1420,7 +1637,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
           <p>For large key dimension \(d_k\), the dot products grow large in magnitude, pushing softmax into a <b>very peaked</b> region where gradients are tiny (saturated). Dividing by \(\sqrt{d_k}\) keeps the scores in a sensible range, so the softmax stays smooth and gradients remain stable during training.</p>
           <h5>(c) Loss + regime</h5>
           <div class="eq">\[ \mathcal{L}=-\sum_{t=1}^{n}\log P(x_t\mid x_1,\dots,x_{t-1}) \]</div>
-          <p>During training we feed the <b>true</b> sequence (teacher forcing) and predict every next token. A <b>causal mask</b> zeroes attention to future positions so position \(t\) only ever sees \(x_{<t}\), keeping the objective honestly autoregressive. Because there's <b>no recurrence</b>, all positions are computed <b>in parallel</b> in one forward/backward pass — unlike the RNN's strictly sequential BPTT — which is why Transformers scale to massive datasets.</p>
+          <p>During training we feed the <b>true</b> sequence (teacher forcing) and predict every next token. A <b>causal mask</b> zeroes attention to future positions so position \(t\) only ever sees \(x_{\lt t}\), keeping the objective honestly autoregressive. Because there's <b>no recurrence</b>, all positions are computed <b>in parallel</b> in one forward/backward pass — unlike the RNN's strictly sequential BPTT — which is why Transformers scale to massive datasets.</p>
         </div>
       </div>
     </div>
@@ -1642,7 +1859,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
       <div class="card l">
         <div class="card-k">Loss</div>
         <div class="card-h">Same task loss, fewer grads</div>
-        <div class="eq">\[ \mathcal{L}=-\sum_t \log P(x_t\mid x_{<t})\quad(\text{e.g. LM CE}) \]</div>
+        <div class="eq">\[ \mathcal{L}=-\sum_t \log P(x_t\mid x_{\lt t})\quad(\text{e.g. LM CE}) \]</div>
         <ul class="decode">
           <li>The <b>objective is unchanged</b> — it's still the task's loss.</li>
           <li>Gradients computed <b>only for \(A,B\)</b>: \(\partial\mathcal L/\partial A,\ \partial\mathcal L/\partial B\).</li>
