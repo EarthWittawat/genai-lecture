@@ -309,7 +309,7 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
       <div class="switch"></div>
       <span>Study mode — hide all answers, reveal one at a time (active recall)</span>
     </div>
-    <div class="prog" id="prog">Seen <b>0</b> / 8</div>
+    <div class="prog" id="prog">Seen <b>0</b> / 9</div>
   </div>
 
   <!-- ============ TOPIC 1: FOUNDATIONS ============ -->
@@ -2023,6 +2023,274 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
     </div>
   </section>
 
+  <!-- ============ TOPIC 9: SUMMARY / CHEATSHEET ============ -->
+  <section class="topic" data-t="8">
+    <div class="t-head">
+      <div class="t-tag">Topic 9 · Synthesis</div>
+      <h2 class="t-title">Cheatsheet: Which Model for Which Task?</h2>
+      <p class="t-idea">Eight models, eight losses, eight specialties. Pick by matching <span class="hl">what you need to produce</span>, <span class="hl">how fast it must run</span>, and <span class="hl">the shape of your data</span>. Every model is just gradient descent on a different objective — the loss <i>is</i> the specialty.</p>
+    </div>
+
+    <div class="triad">
+      <div class="card g">
+        <div class="card-k">For images</div>
+        <div class="card-h">Fast vs Quality vs Latent</div>
+        <ul class="decode">
+          <li><b>Fast 1-shot</b> → <b class="gold">GAN / StyleGAN</b></li>
+          <li><b>Best quality</b> → <b class="gold">Diffusion (DDPM / LDM)</b></li>
+          <li><b>Smooth latent / anomaly</b> → <b class="gold">VAE</b></li>
+          <li><b>Unpaired translate</b> → <b class="gold">CycleGAN</b></li>
+        </ul>
+      </div>
+      <div class="card l">
+        <div class="card-k">For sequences</div>
+        <div class="card-h">Scale vs Footprint</div>
+        <ul class="decode">
+          <li><b>LM / generation</b> → <b class="teal">Decoder Transformer (GPT)</b></li>
+          <li><b>Embeddings / classify</b> → <b class="teal">Encoder Transformer (BERT)</b></li>
+          <li><b>Seq2seq</b> → <b class="teal">Encoder-Decoder (T5)</b></li>
+          <li><b>Tiny / streaming</b> → <b class="teal">LSTM</b></li>
+        </ul>
+      </div>
+      <div class="card t">
+        <div class="card-k">For tabular &amp; adapting</div>
+        <div class="card-h">Specialized recipes</div>
+        <ul class="decode">
+          <li><b>Synthetic tabular</b> → <b class="coral">CTGAN</b></li>
+          <li><b>Adapt pretrained LLM</b> → <b class="coral">LoRA</b></li>
+          <li><b>Adapt huge LLM, small GPU</b> → <b class="coral">QLoRA</b></li>
+          <li><b>One-off prompt tweak</b> → <b class="coral">Prompt engineering</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Pick by task<span class="sub">common goals → recommended model · why it wins · why alternatives lose</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms full">
+          <div class="ml-k">Task → Pick → Why</div>
+          <h4>What to reach for, what to avoid</h4>
+          <ul class="term-list">
+            <li><span class="sym">Photo-real faces</span><b class="gold">StyleGAN2/3</b> — SOTA face quality, per-layer control (pose↔texture), 1-shot sampling. <i>Avoid Diffusion</i> → slow (T denoising steps). <i>Avoid VAE</i> → blurry mean-output.</li>
+            <li><span class="sym">General SOTA images</span><b class="gold">Diffusion (DDPM / LDM)</b> — best quality + diversity + stable training (no minimax). <i>Avoid GAN</i> → mode collapse, brittle. <i>Avoid VAE</i> → blurry.</li>
+            <li><span class="sym">Text → image</span><b class="gold">Latent Diffusion (Stable Diffusion)</b> — conditional denoising in compressed latent, scales to high-res cheaply. <i>Avoid GAN</i> → diversity collapses on conditioning. <i>Avoid pixel diffusion</i> → too costly.</li>
+            <li><span class="sym">Image → image (paired)</span><b class="gold">cGAN / pix2pix</b> — direct conditional, sharp, fast. <i>Avoid CycleGAN</i> → wastes capacity on cycle when pairs exist. <i>Avoid VAE</i> → blurry.</li>
+            <li><span class="sym">Image → image (unpaired)</span><b class="gold">CycleGAN</b> — cycle-consistency replaces missing pairs. <i>Avoid pix2pix</i> → needs paired data. <i>Avoid diffusion</i> → heavier, not always better for style transfer.</li>
+            <li><span class="sym">Synthetic tabular</span><b class="gold">CTGAN</b> — VGM mode-norm handles multi-modal continuous; cond vec + log-freq sampling balances rare classes. <i>Avoid vanilla GAN</i> → collapses on minority classes. <i>Avoid VAE</i> → Gaussian-pixel assumption wrong for mixed types.</li>
+            <li><span class="sym">Smooth latent / interpolation</span><b class="gold">VAE (β-VAE)</b> — KL forces structured continuous space. <i>Avoid GAN</i> → no encoder, latent space holes. <i>Avoid diffusion</i> → latent is a noise trajectory, not semantic.</li>
+            <li><span class="sym">Anomaly detection</span><b class="gold">VAE / autoencoder</b> — reconstruction error scores anomalies; ELBO gives likelihood proxy. <i>Avoid GAN</i> → no likelihood/recon. <i>Avoid LLM</i> → overkill, expensive.</li>
+            <li><span class="sym">Compression / embeddings</span><b class="gold">VAE encoder</b> or <b class="gold">BERT</b> — bottleneck gives compact representation. <i>Avoid GAN</i> → no encoder by default. <i>Avoid RNN</i> → sequential, weak global context.</li>
+            <li><span class="sym">Text generation / LLM</span><b class="gold">Decoder-only Transformer (GPT)</b> — parallel training, scales to billions, KV-cached fast sampling. <i>Avoid RNN/LSTM</i> → sequential bottleneck, vanishing gradients. <i>Avoid VAE</i> → autoregressive likelihood not optimized.</li>
+            <li><span class="sym">Classification / embeddings</span><b class="gold">Encoder-only Transformer (BERT)</b> — bidirectional context, MLM pretraining. <i>Avoid GPT</i> → causal mask wastes right-context. <i>Avoid LSTM</i> → slower, weaker.</li>
+            <li><span class="sym">Translation / seq2seq</span><b class="gold">Encoder-decoder Transformer (T5 / mT5)</b> — encoder bidirectional + decoder cross-attends. <i>Avoid LSTM seq2seq</i> → sequential, worse on long context.</li>
+            <li><span class="sym">Tiny model · short seqs</span><b class="gold">LSTM</b> — small, simple, good on short structured sequences. <i>Avoid Transformer</i> → overkill, more params than data warrants.</li>
+            <li><span class="sym">Adapt LLM, small data</span><b class="gold">LoRA</b> — trains \(r(d+k)\) params (often &lt;1% of full FT), preserves base. <i>Avoid full FT</i> → cost, catastrophic forgetting. <i>Avoid prompt-only</i> → limited behavior change for repeated tasks.</li>
+            <li><span class="sym">Adapt huge LLM, 1 GPU</span><b class="gold">QLoRA</b> — 4-bit-quantized frozen backbone + LoRA adapters. <i>Avoid full FT</i> → OOM. <i>Avoid bf16 LoRA</i> → backbone still too big.</li>
+            <li><span class="sym">Real-time sampling</span><b class="gold">GAN</b> — one forward pass through G. <i>Avoid diffusion</i> → T steps (use DDIM/consistency models if forced). <i>Avoid autoregressive LM</i> → token-by-token.</li>
+            <li><span class="sym">Density / likelihood</span><b class="gold">VAE (ELBO)</b> or <b class="gold">autoregressive LM</b> — tractable likelihood. <i>Avoid GAN</i> → implicit, no \(p_\theta(x)\). <i>Avoid diffusion</i> → only ELBO bound, costly.</li>
+            <li><span class="sym">Disentangled / controllable</span><b class="gold">β-VAE</b> (axis-disentangle) or <b class="gold">StyleGAN</b> (per-layer style). <i>Avoid vanilla GAN</i> → entangled latent. <i>Avoid LSTM</i> → no latent at all.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="mathlens">
+      <div class="ml-h">Family trade-offs<span class="sub">strengths · weaknesses · signature loss</span></div>
+      <div class="ml-grid">
+        <div class="ml-block terms">
+          <div class="ml-k">GAN family</div>
+          <h4>Implicit, fast, sharp — but unstable</h4>
+          <ul class="term-list">
+            <li><b class="teal">+</b>sharp outputs, fast 1-shot sampling, no likelihood needed, flexible conditioning.</li>
+            <li><b class="coral">−</b>mode collapse, no \(p(x)\), unstable minimax, no encoder by default.</li>
+            <li><b>Loss</b> \(\min_G\max_D \mathbb{E}[\log D(x)] + \mathbb{E}[\log(1-D(G(z)))]\) (or WGAN-GP / R1 variants).</li>
+            <li><b>Use when</b> fast sharp samples needed, lots of data, latency matters.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">VAE family (β-VAE)</div>
+          <h4>Stable, smooth latent — but blurry</h4>
+          <ul class="term-list">
+            <li><b class="teal">+</b>stable training (no minimax), smooth/interpolatable latent, encoder for compression/anomaly, ELBO likelihood bound.</li>
+            <li><b class="coral">−</b>blurry outputs (Gaussian-mean prediction), possible KL collapse, less sharp than GAN/diffusion.</li>
+            <li><b>Loss</b> ELBO = recon − β·KL.</li>
+            <li><b>Use when</b> structured latent space, likelihood estimates, or anomaly scoring needed.</li>
+          </ul>
+        </div>
+        <div class="ml-block flow">
+          <div class="ml-k">Diffusion family (DDPM, LDM, DiT)</div>
+          <h4>Best quality + diversity — but slow</h4>
+          <ul class="term-list">
+            <li><b class="teal">+</b>SOTA image quality, stable training, mode coverage, easy conditioning (text, class).</li>
+            <li><b class="coral">−</b>slow sampling (T steps), heavy compute. Mitigations: DDIM, consistency models, LDM (work in latent).</li>
+            <li><b>Loss</b> \(\mathbb{E}\,\|\epsilon - \epsilon_\theta(x_t, t)\|^2\) (noise MSE).</li>
+            <li><b>Use when</b> quality matters more than latency; need controllable generation at scale.</li>
+          </ul>
+        </div>
+        <div class="ml-block terms">
+          <div class="ml-k">Sequence: RNN / LSTM</div>
+          <h4>Lean but bottlenecked</h4>
+          <ul class="term-list">
+            <li><b class="teal">+</b>small param count, streaming-friendly (state = memory), works on tiny data.</li>
+            <li><b class="coral">−</b>sequential → no parallel training; vanishing gradient over long contexts (LSTM helps but not fully).</li>
+            <li><b>Loss</b> \(-\sum_t \log P(x_t \mid x_{\lt t})\).</li>
+            <li><b>Use when</b> tiny model, short sequences, streaming inference on low-resource devices.</li>
+          </ul>
+        </div>
+        <div class="ml-block grad">
+          <div class="ml-k">Transformer (enc / dec / enc-dec)</div>
+          <h4>Default for sequences today</h4>
+          <ul class="term-list">
+            <li><b class="teal">+</b>parallel training, scales to billions, global context via attention, flexible (text, code, vision, multi-modal).</li>
+            <li><b class="coral">−</b>\(O(n^2)\) attention cost (long context expensive), needs lots of data + compute.</li>
+            <li><b>Loss</b> next-token CE (GPT), masked-LM (BERT), cross-attention CE (seq2seq).</li>
+            <li><b>Use when</b> anything language, large-scale, or global context matters.</li>
+          </ul>
+        </div>
+        <div class="ml-block flow">
+          <div class="ml-k">Fine-tuning: LoRA / QLoRA</div>
+          <h4>Adapt giants without retraining</h4>
+          <ul class="term-list">
+            <li><b class="teal">+</b>trains tiny % of params, preserves base, mergeable (zero inference cost), shareable adapters.</li>
+            <li><b class="coral">−</b>caps how much behavior can change (low-rank update); still needs labeled data.</li>
+            <li><b>Loss</b> unchanged — same task loss as full fine-tuning.</li>
+            <li><b>Use when</b> customizing pretrained model on limited budget / data.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="viz-h">Decision flowchart · pick a model in 4 questions</div>
+      <svg viewBox="0 0 760 480" role="img" aria-label="Model selection flowchart">
+        <!-- root -->
+        <rect class="svg-box-l" x="290" y="14" width="180" height="44" rx="10"/>
+        <text class="svg-lab" x="380" y="38" text-anchor="middle">What are you generating?</text>
+
+        <!-- 3 data-type branches -->
+        <rect class="svg-box-g" x="40"  y="90" width="180" height="40" rx="9"/>
+        <text class="svg-lab" x="130" y="115" text-anchor="middle">Images</text>
+        <rect class="svg-box-g" x="290" y="90" width="180" height="40" rx="9"/>
+        <text class="svg-lab" x="380" y="115" text-anchor="middle">Sequences / Text</text>
+        <rect class="svg-box-g" x="540" y="90" width="180" height="40" rx="9"/>
+        <text class="svg-lab" x="630" y="115" text-anchor="middle">Tabular data</text>
+
+        <path class="svg-ar-l" d="M340 58 C260 70 200 80 130 88" marker-end="url(#sm1)"/>
+        <path class="svg-ar-l" d="M380 58 V90" marker-end="url(#sm1)"/>
+        <path class="svg-ar-l" d="M420 58 C500 70 560 80 630 88" marker-end="url(#sm1)"/>
+
+        <!-- IMAGE branch: 3 leaves -->
+        <text class="svg-sub" x="130" y="148" text-anchor="middle">need…</text>
+        <rect class="svg-box" x="10"  y="160" width="80" height="44" rx="8"/>
+        <text class="svg-sub" x="50"  y="180" text-anchor="middle">FAST</text>
+        <text class="svg-sub" x="50"  y="195" text-anchor="middle">1-shot</text>
+        <rect class="svg-box" x="100" y="160" width="80" height="44" rx="8"/>
+        <text class="svg-sub" x="140" y="180" text-anchor="middle">QUALITY</text>
+        <text class="svg-sub" x="140" y="195" text-anchor="middle">diverse</text>
+        <rect class="svg-box" x="190" y="160" width="80" height="44" rx="8"/>
+        <text class="svg-sub" x="230" y="180" text-anchor="middle">LATENT</text>
+        <text class="svg-sub" x="230" y="195" text-anchor="middle">edit/anomaly</text>
+
+        <path class="svg-ar" d="M100 130 C 70 140 60 150 50 160" marker-end="url(#sm2)"/>
+        <path class="svg-ar" d="M130 130 V160" marker-end="url(#sm2)"/>
+        <path class="svg-ar" d="M160 130 C 200 140 215 150 230 160" marker-end="url(#sm2)"/>
+
+        <rect class="svg-box-t" x="10"  y="230" width="80" height="40" rx="9"/>
+        <text class="svg-lab" x="50"  y="255" text-anchor="middle">GAN</text>
+        <rect class="svg-box-t" x="100" y="230" width="80" height="40" rx="9"/>
+        <text class="svg-lab" x="140" y="255" text-anchor="middle">Diffusion</text>
+        <rect class="svg-box-t" x="190" y="230" width="80" height="40" rx="9"/>
+        <text class="svg-lab" x="230" y="255" text-anchor="middle">VAE</text>
+
+        <path class="svg-ar-t" d="M50  204 V230" marker-end="url(#sm3)"/>
+        <path class="svg-ar-t" d="M140 204 V230" marker-end="url(#sm3)"/>
+        <path class="svg-ar-t" d="M230 204 V230" marker-end="url(#sm3)"/>
+
+        <!-- Special image sub-task -->
+        <rect class="svg-box" x="20"  y="290" width="240" height="36" rx="8"/>
+        <text class="svg-sub" x="140" y="313" text-anchor="middle">unpaired translation? → CycleGAN · paired? → pix2pix · style? → StyleGAN</text>
+
+        <!-- SEQUENCE branch -->
+        <text class="svg-sub" x="380" y="148" text-anchor="middle">size?</text>
+        <rect class="svg-box" x="290" y="160" width="170" height="44" rx="8"/>
+        <text class="svg-sub" x="375" y="180" text-anchor="middle">LARGE · GPU</text>
+        <text class="svg-sub" x="375" y="195" text-anchor="middle">+ lots of data</text>
+        <rect class="svg-box" x="475" y="160" width="80" height="44" rx="8"/>
+        <text class="svg-sub" x="515" y="180" text-anchor="middle">TINY</text>
+        <text class="svg-sub" x="515" y="195" text-anchor="middle">short seq</text>
+
+        <path class="svg-ar" d="M360 130 C355 145 360 155 360 160" marker-end="url(#sm2)"/>
+        <path class="svg-ar" d="M420 130 C450 145 490 155 510 160" marker-end="url(#sm2)"/>
+
+        <rect class="svg-box-t" x="290" y="230" width="170" height="40" rx="9"/>
+        <text class="svg-lab" x="375" y="255" text-anchor="middle">Transformer</text>
+        <rect class="svg-box-t" x="475" y="230" width="80" height="40" rx="9"/>
+        <text class="svg-lab" x="515" y="255" text-anchor="middle">LSTM</text>
+
+        <path class="svg-ar-t" d="M375 204 V230" marker-end="url(#sm3)"/>
+        <path class="svg-ar-t" d="M515 204 V230" marker-end="url(#sm3)"/>
+
+        <!-- Transformer sub-pick -->
+        <rect class="svg-box" x="285" y="290" width="180" height="36" rx="8"/>
+        <text class="svg-sub" x="375" y="313" text-anchor="middle">generate → GPT · embed → BERT · seq2seq → T5</text>
+
+        <!-- TABULAR branch -->
+        <rect class="svg-box-t" x="555" y="160" width="150" height="44" rx="9"/>
+        <text class="svg-lab" x="630" y="185" text-anchor="middle">CTGAN</text>
+        <text class="svg-sub" x="630" y="200" text-anchor="middle">mixed · imbalanced</text>
+        <path class="svg-ar-t" d="M630 130 V160" marker-end="url(#sm3)"/>
+
+        <text class="svg-sub" x="630" y="240" text-anchor="middle">VGM + cond + WGAN-GP</text>
+
+        <!-- Pretrained adapt row at bottom -->
+        <rect class="svg-box-l" x="50"  y="370" width="660" height="44" rx="10"/>
+        <text class="svg-lab" x="380" y="395" text-anchor="middle">Adapting a pretrained model? Don't retrain — use LoRA · huge model on small GPU → QLoRA</text>
+
+        <text class="svg-sub" x="380" y="455" text-anchor="middle" fill="#9aa2b1">Walk the tree: data type → output need → size/compute → pick.  Adapting is orthogonal: LoRA layers on top of any base.</text>
+
+        <defs>
+          <marker id="sm1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4fd1c5"/></marker>
+          <marker id="sm2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9aa2b1"/></marker>
+          <marker id="sm3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff8166"/></marker>
+        </defs>
+      </svg>
+      <div class="viz-cap">Three branches by data type, then narrow by speed or scale. <b>LoRA/QLoRA</b> is orthogonal — it sits on top of any pretrained model regardless of family.</div>
+    </div>
+
+    <div class="hook">
+      <div class="ic">🧭</div>
+      <div>
+        <h4>Memory hook</h4>
+        <p class="mnem">"The loss is the specialty — pick the loss that matches the goal."</p>
+        <p><b class="gold">CE</b> → predict labels/tokens. <b class="gold">ELBO</b> → smooth latent + density. <b class="gold">Adversarial</b> → sharp, no likelihood. <b class="gold">Noise-MSE</b> → top quality, slow. <b class="gold">Cycle L1</b> → preserve content without pairs. <b class="gold">Cond-CE + WGAN-GP</b> → tabular with mixed types. Same loop, different signals.</p>
+      </div>
+    </div>
+
+    <div class="practice">
+      <div class="pq-head"><span class="badge">Explain · Q9</span><h3>Pick the right model and defend the choice</h3></div>
+      <div class="pq-body">
+        <p class="pq-q"><span class="stem">For each scenario, name the best-fit model and explain (1) why it wins, (2) which alternative seems plausible, and (3) why that alternative is worse here.</span></p>
+        <ul class="subq">
+          <li><span class="lbl">(a)</span> A startup wants a <b>real-time face filter</b> running on a phone GPU.</li>
+          <li><span class="lbl">(b)</span> A bank needs <b>synthetic customer records</b> (mixed numeric + categorical, with rare classes preserved) for privacy-safe testing.</li>
+          <li><span class="lbl">(c)</span> A medical team wants to <b>detect rare anomalies</b> in CT scans where labels are scarce.</li>
+          <li><span class="lbl">(d)</span> A team has a 70B-parameter open LLM and wants to <b>specialize it on legal documents</b> using one A100.</li>
+        </ul>
+        <button class="reveal-btn" data-rev>Reveal model answer</button>
+        <div class="answer">
+          <h5>(a) Real-time face filter on phone</h5>
+          <p><b>Pick:</b> <b class="gold">StyleGAN (small variant) or a distilled GAN</b>. <b>Why it wins:</b> sampling is a <i>single forward pass</i> through G — fast enough for mobile inference, and StyleGAN gives layer-wise control for face attributes. <b>Plausible alternative:</b> diffusion (best image quality). <b>Why it's worse here:</b> diffusion needs many denoising steps (even DDIM ≥ 20) — far too slow for real-time on a phone.</p>
+          <h5>(b) Synthetic tabular records</h5>
+          <p><b>Pick:</b> <b class="gold">CTGAN</b>. <b>Why it wins:</b> mode-specific normalization (VGM) handles multi-modal continuous columns; the conditional vector + training-by-sampling oversamples rare classes (log-frequency), so minority categories are preserved; WGAN-GP loss stabilizes training. <b>Plausible alternative:</b> vanilla GAN or a tabular VAE. <b>Why it's worse:</b> a vanilla GAN collapses onto the dominant class and treats every continuous column as one Gaussian — minority records vanish; a Gaussian-pixel VAE assumption is wrong for categorical columns and rare modes.</p>
+          <h5>(c) Anomaly detection with few labels</h5>
+          <p><b>Pick:</b> <b class="gold">VAE / autoencoder</b>. <b>Why it wins:</b> trains only on <b>normal</b> data (unsupervised) and uses <b>reconstruction error + KL term</b> as an anomaly score — high error = unfamiliar input. The ELBO gives a likelihood proxy for free. <b>Plausible alternative:</b> a GAN-based anomaly detector. <b>Why it's worse:</b> GANs have no native likelihood/reconstruction signal, so anomaly scoring requires extra machinery (e.g., AnoGAN's iterative latent search) and is unstable to train on small datasets.</p>
+          <h5>(d) Specialize a 70B LLM on one A100</h5>
+          <p><b>Pick:</b> <b class="coral">QLoRA</b>. <b>Why it wins:</b> the 70B backbone is 4-bit-quantized (≈35 GB → fits in one 40 GB A100), and the LoRA adapters \(BA\) (small, in bf16) are the only trainable parameters — typical adapter is &lt;0.5% of full FT. Gradient signal is the full task loss; final adapter can be merged or stored separately. <b>Plausible alternative:</b> full fine-tuning. <b>Why it's worse:</b> full FT of 70B parameters needs hundreds of GB of optimizer state + activations — impossible on a single A100, and it risks catastrophic forgetting of the base model's general capabilities.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="pager">
     <div class="pg prev" id="pgPrev"><small>← Previous</small><span id="pgPrevT"></span></div>
     <div class="pg next" id="pgNext"><small>Next →</small><span id="pgNextT"></span></div>
@@ -2036,9 +2304,9 @@ b.coral{color:var(--coral)} b.gold{color:var(--gold)} b.teal{color:var(--teal)}
 
 <script>
 const TOPICS = [
-  "Foundations","GANs","Advanced GANs","VAEs","Sequence Models","Transformers","Diffusion","Fine-Tuning"
+  "Foundations","GANs","Advanced GANs","VAEs","Sequence Models","Transformers","Diffusion","Fine-Tuning","Summary"
 ];
-const NUMS = ["01","02","03","04","05","06","07","08"];
+const NUMS = ["01","02","03","04","05","06","07","08","09"];
 let current = 0;
 const seen = new Set();
 
